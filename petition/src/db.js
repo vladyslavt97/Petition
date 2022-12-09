@@ -1,9 +1,38 @@
-require('dotenv').config();
-const { SQL_USER, SQL_PASSWORD } = process.env; // add a .env file next to the db.js file with your PostgreSQL credentials
+// require('dotenv').config();
+// const { USER, PWD } = process.env; // add a .env file next to the db.js file with your PostgreSQL credentials
 const spicedPg = require('spiced-pg');
-const db = spicedPg(`postgres:${SQL_USER}:${SQL_PASSWORD}@localhost:5432/petition`);
+// const db = spicedPg(`postgres:${USER}:${PWD}@localhost:5432/petition`);
+const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petition`);
 
+// query is a Promise
 // create the following functions:
-//  - getAllSignatures - use db.query to get all signatures from table signatures
-//  - addSignature - use db.query to insert a signature to table signatures
+// db.query(`SELECT * FROM signatures;`)
+//     .then(data => {
+//         console.log(data); // in rows property is the actual data
+//     })
+//     .catch(err => {
+//         console.log('error appeared for query: ', err);
+//     });
+
+
+
+module.exports.getAllSignatures = () =>{ //  - getAllSignatures - use db.query to get all signatures from table signatures
+    db.query(`SELECT * FROM signatures;`)
+        .then(data => {
+            console.log(data); // in rows property is the actual data
+        })
+        .catch(err => {
+            console.log('error appeared for query: ', err);
+        });
+};
+
+module.exports.addSignature = () => { //  - addSignature - use db.query to insert a signature to table signatures
+    db.query(`INSERT INTO signatures (firstname, lastname) VALUES ($1, $2) RETURNING *;`, ['Vladyslav', 'Tsurkanenko'])
+        .then(data => {
+            console.log('inserted data into table: ', data.rows);
+        });
+};
+
 // Don't forget to export the functions with module.exports
+
+

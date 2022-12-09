@@ -7,3 +7,4 @@ CREATE TABLE signatures (
     signature VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT current_timestamp
 );
+
