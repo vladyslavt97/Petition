@@ -37,19 +37,33 @@ app.get("/petition", (req, res) => { //  1 . - one route for renderering the pet
         }
     });
 });
+app.post('/petition', (req, res) => {
+    let firstNameValuesSaved = req.body.firstNameValues;
+    let secondNameValuesSaved = req.body.secondNameValues;
+    let drawingCanvas = "test";
+    console.log("First name: ", firstNameValuesSaved, "Last name: ", secondNameValuesSaved, 'drawingCanvas: ', drawingCanvas);
+    insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
+    res.redirect("/petition/signers");
+});
+let numberofItems;
+let allDataRows;
 app.get("/petition/signers", (req, res) => { // 2. - one route for rendering the signers page with handlebars (EASY); make sure to get all the signature data from the db before (MEDIUM)
-    // const arr = selectAllDataFromSignaturesDB();
-    // const firstname = arr.map(arrof => arrof.firstname);
-    // console.log(firstname);
     selectAllDataFromSignaturesDB()
-        .then(data => {
+        .then(allData => {
             // data is the resolved value of the promise
-            console.log('server.js', data.rows); // Outputs the value of property1
+            numberofItems = allData.rows.length;
+            allDataRows = allData.rows;
+            // console.log('server.js', numberofItems); 
+        })
+        .catch(err => {
+            console.log('error appeared for query: ', err);
         });
     res.render("signers", {
         layout: "main",
+        numberofItems,
         cohortName,
-        createdBy, 
+        createdBy,
+        allDataRows, 
         helpers: {
             getStylesHelper: "/styles-signers.css" 
         }
@@ -71,16 +85,7 @@ app.get("/petition/thanks", (req, res) => { // 3. - one route for rendering the 
 // ## Form should make POST request: !!!
 // 2. add another POST route in your express app where you will listen for the data the form will be sending for first name, last name and signature
 // 4. in the POST route you should read out the body from the request and save the information in the petition database with the help of the function you have written before in the db.js file!
-app.post('/petition', (req, res) => {
-    const input = req.body;
-    // Use the connection to update the database
-    insertDataIntoSignatureDB(input);
-    (error, results) => {
-        if (error) throw error;
-        // Return the updated data as a response
-        res.json(results);
-    };
-});
+
 
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
