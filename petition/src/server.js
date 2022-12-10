@@ -1,6 +1,6 @@
 const express = require("express"); // require modules that you will need and set up your express app (EASY)
 const app = express();
-const { getAllSignatures,addSignature } = require('./db');
+const { selectAllDataFromSignaturesDB,insertDataIntoSignatureDB } = require('./db');
 
 // setup handlebars for your express app correctly (EASY)
 // Handlebars Setup
@@ -28,7 +28,6 @@ const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
 app.get("/petition", (req, res) => { //  1 . - one route for renderering the petition page with handlebars (EASY)
-    getAllSignatures();
     res.render("petition", {
         layout: "main",
         cohortName,
@@ -39,7 +38,14 @@ app.get("/petition", (req, res) => { //  1 . - one route for renderering the pet
     });
 });
 app.get("/petition/signers", (req, res) => { // 2. - one route for rendering the signers page with handlebars (EASY); make sure to get all the signature data from the db before (MEDIUM)
-    getAllSignatures();
+    // const arr = selectAllDataFromSignaturesDB();
+    // const firstname = arr.map(arrof => arrof.firstname);
+    // console.log(firstname);
+    selectAllDataFromSignaturesDB()
+        .then(data => {
+            // data is the resolved value of the promise
+            console.log('server.js', data.rows); // Outputs the value of property1
+        });
     res.render("signers", {
         layout: "main",
         cohortName,
@@ -50,7 +56,6 @@ app.get("/petition/signers", (req, res) => { // 2. - one route for rendering the
     });
 });
 app.get("/petition/thanks", (req, res) => { // 3. - one route for rendering the thanks page with handlebars (EASY); make sure to get information about the number of signers (MEDIUM)
-    addSignature();
     res.render("thanks", {
         layout: "main",
         cohortName,
@@ -63,18 +68,18 @@ app.get("/petition/thanks", (req, res) => { // 3. - one route for rendering the 
 
 
 // 4. - one route for POSTing petition data -> update db accordingly (MEDIUM)
-app.post('/update', (req, res) => {
-    // Get the user input from the request body
+// ## Form should make POST request: !!!
+// 2. add another POST route in your express app where you will listen for the data the form will be sending for first name, last name and signature
+// 4. in the POST route you should read out the body from the request and save the information in the petition database with the help of the function you have written before in the db.js file!
+app.post('/petition', (req, res) => {
     const input = req.body;
     // Use the connection to update the database
-    addSignature(input);
+    insertDataIntoSignatureDB(input);
     (error, results) => {
         if (error) throw error;
-
         // Return the updated data as a response
         res.json(results);
     };
-    
 });
 
 

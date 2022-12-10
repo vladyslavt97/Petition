@@ -7,17 +7,17 @@ const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petitio
 // query is a Promise
 // create the following functions:
 
-module.exports.getAllSignatures = () =>{ //  - getAllSignatures - use db.query to get all signatures from table signatures
+module.exports.selectAllDataFromSignaturesDB = () =>{ //  - getAllSignatures - use db.query to get all signatures from table signatures
     db.query(`SELECT * FROM signatures;`)
         .then(data => {
-            console.log(data.rows); // in rows property is the actual data
+            console.log('db.js', data.rows); // in rows property is the actual data
         })
         .catch(err => {
             console.log('error appeared for query: ', err);
         });
 };
 
-module.exports.addSignature = () => { //  - addSignature - use db.query to insert a signature to table signatures
+module.exports.insertDataIntoSignatureDB = () => { //  - addSignature - use db.query to insert a signature to table signatures
     db.query(`INSERT INTO signatures (firstname, lastname) VALUES ($1, $2) RETURNING *;`, ['Vladyslav', 'Tsurkanenko'])
         .then(data => {
             console.log('inserted data into table: ', data.rows);

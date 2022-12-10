@@ -1,3 +1,4 @@
+<script defer src="canvas.js"></script>
 <img src="/patriot.jpg" alt="close the sky">
 <h3>Please, take part in the petition to save lives and protect ukrainian people.</h3><br>
 <p>Ukraine has been supplied with munition and anti-missile systems by the NATO states, which enabled Ukraine to shoot down 75% of the missiles. However none of them has the capabbilities to stop the remaining 25%. The political decision by Germany and partners could save hunderts of thousands of people.</p> 
@@ -5,7 +6,8 @@
     <input type="text" placeholder="First Name">
     <input type="text" placeholder="Second Name">
     <canvas id="drawing" width="400" height="200"></canvas>
-    <button>Submit</button>
+    <a id="button-to-signers-page" href="/petition/signers">Submit</a>
+    {{!-- <button id="button-to-signers-page" href="/petition/signers">Submit</button> --}}
     <input type="hidden" id="custId" name="custId" value="3487">
     {{!-- <input style="display: none;" name="signature">  given by Martin--}} 
 </form>
