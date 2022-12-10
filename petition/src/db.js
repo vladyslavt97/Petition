@@ -6,20 +6,11 @@ const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petitio
 
 // query is a Promise
 // create the following functions:
-// db.query(`SELECT * FROM signatures;`)
-//     .then(data => {
-//         console.log(data); // in rows property is the actual data
-//     })
-//     .catch(err => {
-//         console.log('error appeared for query: ', err);
-//     });
-
-
 
 module.exports.getAllSignatures = () =>{ //  - getAllSignatures - use db.query to get all signatures from table signatures
     db.query(`SELECT * FROM signatures;`)
         .then(data => {
-            console.log(data); // in rows property is the actual data
+            console.log(data.rows); // in rows property is the actual data
         })
         .catch(err => {
             console.log('error appeared for query: ', err);

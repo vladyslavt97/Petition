@@ -12,7 +12,10 @@ app.set("view engine", "handlebars");
 
 // apply different middlewares like:
 app.use(express.static("../public")); //  - express.static for static files (EASY)
-app.use(express.urlencoded()); //  - express.urlencoded for ready the body of POST requests (EASY)
+// app.use(express.urlencoded()); 
+const urlEncodedMiddleware = express.urlencoded({ extended: false });//  - express.urlencoded for ready the body of POST requests (EASY)
+app.use(urlEncodedMiddleware);
+
 
 //my redirect
 app.get('/', (req, res) => {
@@ -60,33 +63,19 @@ app.get("/petition/thanks", (req, res) => { // 3. - one route for rendering the 
 
 
 // 4. - one route for POSTing petition data -> update db accordingly (MEDIUM)
+app.post('/update', (req, res) => {
+    // Get the user input from the request body
+    const input = req.body;
+    // Use the connection to update the database
+    addSignature(input);
+    (error, results) => {
+        if (error) throw error;
 
-
-
-// :projectDirectory is a placeholder and will be put in req.params object
-// app.get('/projects/:projectDirectory', (req, res) => {
-//     const projectDirectory = req.params.projectDirectory;
-//     const selectedProject = projects.find(p => {
-//         return p.url === projectDirectory;
-//     });
+        // Return the updated data as a response
+        res.json(results);
+    };
     
-//     if (selectedProject === undefined){// TASK: check if selectedProject is undefined.
-//         res.status(404).send("Wrong request"); //      if it is undefined. set statuscode 404 and send response.
-//     }
-
-//     res.render('show-lists', {
-//         layout: "main",
-//         helpers: {
-//             getStylesHelper: "/stylesforprojects.css",
-//             getActiveClass: (url) => {
-//                 // console.log(selectedProject);
-//                 if(selectedProject.url === url){
-//                     return 'active';
-//                 }  
-//             }
-//         }
-//     });
-// });
+});
 
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
