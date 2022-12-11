@@ -4,10 +4,7 @@ const spicedPg = require('spiced-pg');
 // const db = spicedPg(`postgres:${USER}:${PWD}@localhost:5432/petition`);
 const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petition`);
 
-// query is a Promise
-// create the following functions:
-// Don't forget to export the functions with module.exports
-module.exports.selectAllDataFromSignaturesDB = () =>{ //  - getAllSignatures - use db.query to get all signatures from table signatures
+module.exports.selectAllDataFromSignaturesDB = () =>{
     return new Promise((resolve, reject) => {
         const allData = db.query(`SELECT * FROM signatures;`);
         resolve(allData);
@@ -23,11 +20,9 @@ module.exports.insertDataIntoSignatureDB = (firstNameValuesSaved, secondNameValu
         .catch(err => {
             console.log('error appeared for query: ', err);
         });
-    // return new Promise((resolve, reject) => {
-    //     const insertDataToSql = db.query(`INSERT INTO signatures (firstname, lastname) VALUES ($1, $2) RETURNING *;`, ['Vladyslav', 'Tsurkanenko']);
-    //     resolve(insertDataToSql);
-    //     reject('Error: Could not fetch data from the API');
-    // });
+    
+    //const insertDataToSql = db.query(`INSERT INTO signatures (firstname, lastname) VALUES ($1, $2) RETURNING *;`, ['Vladyslav', 'Tsurkanenko']);
+    
 };
 
 

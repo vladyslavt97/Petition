@@ -30,3 +30,37 @@ canvas.addEventListener("mouseup", function () {
 canvas.addEventListener("mouseleave", function () {
     isDrawing = false;
 });
+
+
+//my setup
+
+const getBase64StringFromDataURL = (dataURL) =>
+    dataURL.replace('data:', '').replace(/^.+,/, '');
+const btn = document.querySelector('button');
+btn.addEventListener("click", function () {
+    let dataURL = canvas.toDataURL();
+    const base64 = getBase64StringFromDataURL(dataURL);
+    const hiddenValue = document.getElementById("hidden").value = base64;
+    console.log(hiddenValue);
+});
+
+
+
+
+
+
+
+// export canvasForBase64 = binaryBase64Image;
+// console.log(canvasForBase64);
+
+// module.exports.coordinates = canvas.addEventListener('mousedown', event => {
+//     const x = event.clientX;
+//     const y = event.clientY;
+//     const rect = canvas.getBoundingClientRect();
+//     console.log('getBoundingClientRect: ', rect);
+//     const canvasX = x - rect.left;
+//     const canvasY = y - rect.top;
+//     console.log('canvasX: ', canvasX);
+//     console.log('canvasY: ', canvasY);
+//     // draw at the (canvasX, canvasY) point on the canvas
+// });

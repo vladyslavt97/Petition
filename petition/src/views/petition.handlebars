@@ -3,11 +3,22 @@
 <h3>Please, take part in the petition to save lives and protect ukrainian people.</h3><br>
 <p>Ukraine has been supplied with munition and anti-missile systems by the NATO states, which enabled Ukraine to shoot down 75% of the missiles. However none of them has the capabbilities to stop the remaining 25%. The political decision by Germany and partners could save hunderts of thousands of people.</p> 
 <form action="/petition" method="POST" id="inputs">
-    <input type="text" name="firstNameValues" placeholder="First Name">
-    <input type="text" name="secondNameValues" placeholder="Second Name">
-    <canvas id="drawing" width="400" height="200"></canvas>
-    <input type="submit" href="/petition/signers" value="Submit">
-    <input type="hidden" id="custId" name="custId" value="3487">
-    {{!-- <input style="display: none;" name="signature">  given by Martin--}} 
+    <input type="text" name="firstNameValues" placeholder="First Name" required>
+    <input type="text" name="secondNameValues" placeholder="Second Name" required>
+    <canvas id="drawing" width="400" height="200" required></canvas>
+    <button type="submit" href="/petition/thanks">Submit</button>
+    <input id="hidden" value="" style="display: none;" name="signature" required>
 </form>
 <img src="/field.jpeg" id="backgroundimage" alt="field">
+
+
+{{!-- - If there are invalid values make sure to rerender the petition page with some extra information for the handlebars
+view to show some error! --}}
+
+
+{{!-- showError: true, if the canvas was not signed. --}}
+{{#if showError}}
+<p>FILL THE DATA: First Name, Second Name and Signature</p>
+{{else}}
+
+{{/if}}
