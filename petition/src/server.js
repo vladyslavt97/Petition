@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const { selectAllDataFromSignaturesDB,insertDataIntoSignatureDB } = require('./db');
-
+const cookieParser = require('cookie-parser');
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
@@ -20,73 +20,86 @@ app.get('/', (req, res) => {
 const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
+
+///cookie midleware setup
+app.use(cookieParser());
+//cookies!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+app.use((req, res, next) => {
+    if (req.url.startsWith("/petition") && req.cookies.accepted === "on") {
+        res.redirect("/thanks");   
+    } else {
+        next();
+    }
+});
+//
 app.get("/petition", (req, res) => {
     res.render("petition", {
         layout: "main",
         cohortName,
-        createdBy, 
+        createdBy,
+        showError: false, 
         helpers: {
             getStylesHelper: "/styles-petition.css" 
         }
     });
 });
-app.post('/petition', (req, res) => {
-    let firstNameValuesSaved = req.body.firstNameValues;
-    let secondNameValuesSaved = req.body.secondNameValues;
-    let drawingCanvas = req.body.signature;
-    // console.log("First name: ", firstNameValuesSaved, "Last name: ", secondNameValuesSaved, 'drawingCanvas: ', drawingCanvas);
-    insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
-    res.redirect("/petition/thanks");
-});
-//
-// if(req.body.firstNameValues !== null && req.body.secondNameValues === null){
-    //     res.cookie('accepted', 'on');
-    //     res.redirect('/petition/thanks');
-    // } else {
-    //     res.redirect('/petition/');
-    // }
 
 
 
 let numberofItems;
 let allDataRows;
 
-app.get("/petition/thanks", (req, res) => { 
+app.get("/thanks", (req, res) => { 
     selectAllDataFromSignaturesDB()
         .then(allData => {
             numberofItems = allData.rows.length;
+            res.render("thanks", {
+                layout: "main",
+                cohortName,
+                numberofItems,
+                createdBy, 
+                helpers: {
+                    getStylesHelper: "/styles-thanks.css" 
+                }
+            });
+            
         })
         .catch(err => {
             console.log('error appeared for query: ', err);
         });
-    res.render("thanks", {
-        layout: "main",
-        cohortName,
-        numberofItems,
-        createdBy, 
-        helpers: {
-            getStylesHelper: "/styles-thanks.css" 
-        }
-    });
 });
-app.get("/petition/signers", (req, res) => {
+
+app.get("/signers", (req, res) => {
     selectAllDataFromSignaturesDB()
         .then(allData => {
             allDataRows = allData.rows;
+            res.render("signers", {
+                layout: "main",
+                // numberofItems,
+                cohortName,
+                createdBy,
+                allDataRows, 
+                helpers: {
+                    getStylesHelper: "/styles-signers.css" 
+                }
+            });
         })
         .catch(err => {
             console.log('error appeared for query: ', err);
         });
-    res.render("signers", {
-        layout: "main",
-        numberofItems,
-        cohortName,
-        createdBy,
-        allDataRows, 
-        helpers: {
-            getStylesHelper: "/styles-signers.css" 
-        }
-    });
+});
+
+app.post('/petition', (req, res) => {
+    let firstNameValuesSaved = req.body.firstNameValues;
+    let secondNameValuesSaved = req.body.secondNameValues;
+    let drawingCanvas = req.body.signature;
+    insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
+    console.log('req.body', req.body);
+    //set the cookies for the browser in the response, so the browser will tell us if we already signed
+    if(firstNameValuesSaved !== null && secondNameValuesSaved !== null && drawingCanvas !== null){
+        res.cookie('accepted', 'on');
+        res.redirect('/thanks');
+    }
 });
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
