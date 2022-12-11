@@ -8,12 +8,14 @@ app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 // End of setup
 
+let showError = false;
 app.use(express.static("../public"));
 const urlEncodedMiddleware = express.urlencoded({ extended: false });
 app.use(urlEncodedMiddleware);
 
 
 app.get('/', (req, res) => {
+    // showError = false;
     res.redirect('/petition');
 });
 
@@ -37,7 +39,7 @@ app.get("/petition", (req, res) => {
         layout: "main",
         cohortName,
         createdBy,
-        // showError: false, 
+        showError, 
         helpers: {
             getStylesHelper: "/styles-petition.css" 
         }
@@ -92,26 +94,22 @@ app.post('/petition', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
     let drawingCanvas = req.body.signature;
-    insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
+    if(firstNameValuesSaved !== '' || secondNameValuesSaved !== '' || drawingCanvas !== ''){
+        insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
+    }
     
-    let showError;
+
     if(firstNameValuesSaved === "" || secondNameValuesSaved === "" || drawingCanvas === ""){
         console.log('reached');
-        // res.render("petition", {
         showError = true, 
-        // });
         res.redirect('/petition');
-        console.log('reac3123ed');
+        alert('Enter the data');
     }
-    showError;
     if(firstNameValuesSaved !== null && secondNameValuesSaved !== null && drawingCanvas !== null){
         showError = false, 
-        console.log('reached!!!');
         res.cookie('accepted', 'on');
-        // insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
         res.redirect('/thanks');
-        console.log('also reached!!!');
-    }///
+    }
 });
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
