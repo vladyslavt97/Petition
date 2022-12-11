@@ -37,7 +37,7 @@ app.get("/petition", (req, res) => {
         layout: "main",
         cohortName,
         createdBy,
-        showError: false, 
+        // showError: false, 
         helpers: {
             getStylesHelper: "/styles-petition.css" 
         }
@@ -88,20 +88,31 @@ app.get("/signers", (req, res) => {
             console.log('error appeared for query: ', err);
         });
 });
-
 app.post('/petition', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
     let drawingCanvas = req.body.signature;
     insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
-    console.log('req.body', req.body);
-    //set the cookies for the browser in the response, so the browser will tell us if we already signed
-    if(firstNameValuesSaved !== null && secondNameValuesSaved !== null && drawingCanvas !== null){
-        res.cookie('accepted', 'on');
-        res.redirect('/thanks');
+    
+    let showError;
+    if(firstNameValuesSaved === "" || secondNameValuesSaved === "" || drawingCanvas === ""){
+        console.log('reached');
+        // res.render("petition", {
+        showError = true, 
+        // });
+        res.redirect('/petition');
+        console.log('reac3123ed');
     }
+    showError;
+    if(firstNameValuesSaved !== null && secondNameValuesSaved !== null && drawingCanvas !== null){
+        showError = false, 
+        console.log('reached!!!');
+        res.cookie('accepted', 'on');
+        // insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
+        res.redirect('/thanks');
+        console.log('also reached!!!');
+    }///
 });
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
-
 
