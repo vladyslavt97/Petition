@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const { selectAllDataFromSignaturesDB,insertDataIntoSignatureDB } = require('./db');
 const cookieParser = require('cookie-parser');
+// const cookieSession = require("cookie-session");
+// const {SESSION_SECRET} = process.env;
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
@@ -15,7 +17,6 @@ app.use(urlEncodedMiddleware);
 
 
 app.get('/', (req, res) => {
-    // showError = false;
     res.redirect('/petition');
 });
 
@@ -23,9 +24,8 @@ const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
 
-///cookie midleware setup
+///cookie midleware setup OLD
 app.use(cookieParser());
-//cookies!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.use((req, res, next) => {
     if (req.url.startsWith("/petition") && req.cookies.accepted === "on") {
         res.redirect("/thanks");   
@@ -33,13 +33,21 @@ app.use((req, res, next) => {
         next();
     }
 });
-//
+
+//cookiesSession NEW
+// app.use(
+//     cookieSession({
+//         secret: `try`, //process.env.SESSION_SECRET,
+//         maxAge: 1000*60*60*24*14
+//     })
+// );
+
 app.get("/petition", (req, res) => {
     res.render("petition", {
         layout: "main",
         cohortName,
         createdBy,
-        showError, 
+        showError:false, 
         helpers: {
             getStylesHelper: "/styles-petition.css" 
         }
@@ -51,7 +59,12 @@ app.get("/petition", (req, res) => {
 let numberofItems;
 let allDataRows;
 
-app.get("/thanks", (req, res) => { 
+app.get("/thanks", (req, res) => {
+    // console.log('req.session: ', req.session);
+    // if(!req.session.signed || req.session.signed !== data.rows.id){
+    //     insertDataIntoSignatureDB();
+    //     return res.redirect('/');
+    // }
     selectAllDataFromSignaturesDB()
         .then(allData => {
             numberofItems = allData.rows.length;
@@ -77,7 +90,7 @@ app.get("/signers", (req, res) => {
             allDataRows = allData.rows;
             res.render("signers", {
                 layout: "main",
-                // numberofItems,
+                numberofItems,
                 cohortName,
                 createdBy,
                 allDataRows, 
@@ -90,32 +103,41 @@ app.get("/signers", (req, res) => {
             console.log('error appeared for query: ', err);
         });
 });
+
+
 app.post('/petition', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
     let drawingCanvas = req.body.signature;
     if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && drawingCanvas !== ''){
-        console.log('do not draw');
         insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
-    }
-    
-
-    if(firstNameValuesSaved === "" || secondNameValuesSaved === "" || drawingCanvas === ""){
-        // res.render("petition", {
-        //     showError: true, 
-        // });
-        // res.redirect('/petition');
-        console.log('reached');
-        showError = true, 
-        res.redirect('/petition');
-        alert('Enter the data');
-    }
-    if(firstNameValuesSaved !== null && secondNameValuesSaved !== null && drawingCanvas !== null){
+        console.log('checking');
         showError = false, 
         res.cookie('accepted', 'on');
         res.redirect('/thanks');
+    } else {
+        res.render("petition", {
+            layout: "main",
+            cohortName,
+            createdBy,
+            showError: true,  
+            helpers: {
+                getStylesHelper: "/styles-petition.css" 
+            }
+        });
     }
 });
+//     insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas)
+//         .then((data) => {
+//             // console.log(data.rows); // log the data you get back from the db to see how you can access the id
+//             req.session.signed = data.rows.id;
+//             console.log('req.session.signed: ', data.rows.length);
+//             res.redirect('/thanks');
+//         })
+//         .catch((err) => {
+//             console.log('ups..: ', err);
+//         });
+// }
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
 

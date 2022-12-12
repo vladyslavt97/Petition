@@ -1,11 +1,7 @@
 require('dotenv').config();
-// const { USER, PWD } = process.env;
-const { USER, PWD } = require("./../../secrets.json"); // .env did not read PWD from .end. Had to use .json.
+const { USER_DB, PWD_DB } = process.env;
 const spicedPg = require('spiced-pg');
-// console.log('u: ', USER);
-// console.log('p: ', PWD);
-const db = spicedPg(`postgres:${USER}:${PWD}@localhost:5432/petition`);
-// const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petition`);
+const db = spicedPg(`postgres:${USER_DB}:${PWD_DB}@localhost:5432/petition`);
 
 module.exports.selectAllDataFromSignaturesDB = () =>{
     return new Promise((resolve, reject) => {
@@ -15,17 +11,14 @@ module.exports.selectAllDataFromSignaturesDB = () =>{
     });
 };
 
-module.exports.insertDataIntoSignatureDB = (firstNameValuesSaved, secondNameValuesSaved, drawingCanvas) => { //  - addSignature - use db.query to insert a signature to table signatures
-    db.query(`INSERT INTO signatures (firstname, lastname, signature) VALUES ($1, $2, $3)`, [firstNameValuesSaved, secondNameValuesSaved, drawingCanvas])
+module.exports.insertDataIntoSignatureDB = (firstNameValuesSaved, secondNameValuesSaved, drawingCanvas) => { //  - addSignature
+    db.query(`INSERT INTO signatures (firstname, lastname, signature) VALUES ($1, $2, $3) RETURNING *;`, [firstNameValuesSaved, secondNameValuesSaved, drawingCanvas])
         .then(data => {
-            console.log('inserted data into table: ', data.rows);
+            // console.log('inserted data into table: ', data.rows);
         })
         .catch(err => {
-            console.log('error appeared for query: ', err);
+            // console.log('error appeared for query: ', err);
         });
-    
-    //const insertDataToSql = db.query(`INSERT INTO signatures (firstname, lastname) VALUES ($1, $2) RETURNING *;`, ['Vladyslav', 'Tsurkanenko']);
-    
 };
 
 

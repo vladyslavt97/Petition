@@ -33,13 +33,9 @@ canvas.addEventListener("mouseleave", function () {
 
 
 //my setup for encoding
-
-const getBase64StringFromDataURL = (dataURL) =>
-    dataURL.replace('data:', '').replace(/^.+,/, '');
 const btn = document.querySelector('button');
 btn.addEventListener("click", function () {
     let dataURL = canvas.toDataURL();
-    const base64 = getBase64StringFromDataURL(dataURL);
-    const hiddenValue = document.getElementById("hidden").value = base64;
+    const hiddenValue = document.getElementById("hidden").value = dataURL;
     console.log(hiddenValue);
 });
