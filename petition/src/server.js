@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
-const { selectAllDataFromSignaturesDB,insertDataIntoSignatureDB } = require('./db');
-const cookieParser = require('cookie-parser');
-// const cookieSession = require("cookie-session");
-// const {SESSION_SECRET} = process.env;
+const helmet = require("helmet");
+const { selectAllDataFromSignaturesDB, insertDataIntoSignatureDB } = require('./db');
+// const cookieParser = require('cookie-parser');
+
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
@@ -14,33 +14,43 @@ let showError = false;
 app.use(express.static("../public"));
 const urlEncodedMiddleware = express.urlencoded({ extended: false });
 app.use(urlEncodedMiddleware);
-
-
-app.get('/', (req, res) => {
-    res.redirect('/petition');
-});
+app.use(helmet());
 
 const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
 
 ///cookie midleware setup OLD
-app.use(cookieParser());
+// app.use(cookieParser());
+
+//cookiesSession NEW
+const cookieSession = require("cookie-session");
+// const {SESSION_SECRET} = process.env;
+app.use(
+    cookieSession({
+        secret: `try`, //process.env.SESSION_SECRET,
+        maxAge: 1000*60*60*24*14
+    })
+);
+
 app.use((req, res, next) => {
-    if (req.url.startsWith("/petition") && req.cookies.accepted === "on") {
+    // console.log('req.session.signed', req.session.signed);
+    if (req.url.startsWith("/petition") && req.session.signed) {
         res.redirect("/thanks");   
+        // console.log('redirect!!');
+    } else if (req.url.startsWith("/thanks") && !req.session.signed) {
+        res.redirect("/petition"); 
     } else {
         next();
     }
+    
 });
-
-//cookiesSession NEW
-// app.use(
-//     cookieSession({
-//         secret: `try`, //process.env.SESSION_SECRET,
-//         maxAge: 1000*60*60*24*14
-//     })
-// );
+// app.get('/thanks', (req, res, next)=>{
+    
+// });
+app.get('/', (req, res) => {
+    res.redirect('/petition');
+});
 
 app.get("/petition", (req, res) => {
     res.render("petition", {
@@ -58,19 +68,20 @@ app.get("/petition", (req, res) => {
 
 let numberofItems;
 let allDataRows;
-
+let infoOfUser;
+let final;
 app.get("/thanks", (req, res) => {
-    // console.log('req.session: ', req.session);
-    // if(!req.session.signed || req.session.signed !== data.rows.id){
-    //     insertDataIntoSignatureDB();
-    //     return res.redirect('/');
-    // }
     selectAllDataFromSignaturesDB()
         .then(allData => {
             numberofItems = allData.rows.length;
+            infoOfUser = allData.rows.find(el => {
+                return el.id === req.session.signed;
+            });
+            final = infoOfUser.signature;
             res.render("thanks", {
                 layout: "main",
                 cohortName,
+                final,
                 numberofItems,
                 createdBy, 
                 helpers: {
@@ -80,8 +91,9 @@ app.get("/thanks", (req, res) => {
             
         })
         .catch(err => {
-            console.log('error appeared for query: ', err);
+            console.log('error appeared for query 1: ', err);
         });
+
 });
 
 app.get("/signers", (req, res) => {
@@ -110,11 +122,17 @@ app.post('/petition', (req, res) => {
     let secondNameValuesSaved = req.body.secondNameValues;
     let drawingCanvas = req.body.signature;
     if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && drawingCanvas !== ''){
-        insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
-        console.log('checking');
-        showError = false, 
-        res.cookie('accepted', 'on');
-        res.redirect('/thanks');
+        insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas)
+            .then((data)=>{
+                // console.log('data', data.rows[0].id);
+                showError = false, 
+                // res.cookie('accepted', 'on');
+                req.session.signed = data.rows[0].id;
+                res.redirect('/thanks');
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     } else {
         res.render("petition", {
             layout: "main",
@@ -127,17 +145,6 @@ app.post('/petition', (req, res) => {
         });
     }
 });
-//     insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas)
-//         .then((data) => {
-//             // console.log(data.rows); // log the data you get back from the db to see how you can access the id
-//             req.session.signed = data.rows.id;
-//             console.log('req.session.signed: ', data.rows.length);
-//             res.redirect('/thanks');
-//         })
-//         .catch((err) => {
-//             console.log('ups..: ', err);
-//         });
-// }
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
 

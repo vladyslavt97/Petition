@@ -63,3 +63,10 @@ h1{
         font-size: 10px;
     }
 }
+
+#yoursignature{
+    background-color: white;
+    border: 5px solid orange;
+    border-radius: 10px;
+    width: 200px;
+}

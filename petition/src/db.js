@@ -12,13 +12,7 @@ module.exports.selectAllDataFromSignaturesDB = () =>{
 };
 
 module.exports.insertDataIntoSignatureDB = (firstNameValuesSaved, secondNameValuesSaved, drawingCanvas) => { //  - addSignature
-    db.query(`INSERT INTO signatures (firstname, lastname, signature) VALUES ($1, $2, $3) RETURNING *;`, [firstNameValuesSaved, secondNameValuesSaved, drawingCanvas])
-        .then(data => {
-            // console.log('inserted data into table: ', data.rows);
-        })
-        .catch(err => {
-            // console.log('error appeared for query: ', err);
-        });
+    return db.query(`INSERT INTO signatures (firstname, lastname, signature) VALUES ($1, $2, $3) RETURNING *;`, [firstNameValuesSaved, secondNameValuesSaved, drawingCanvas]);
 };
 
 
