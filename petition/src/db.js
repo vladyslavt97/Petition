@@ -1,8 +1,11 @@
-// require('dotenv').config();
-// const { USER, PWD } = process.env; // add a .env file next to the db.js file with your PostgreSQL credentials
+require('dotenv').config();
+// const { USER, PWD } = process.env;
+const { USER, PWD } = require("./../../secrets.json"); // .env did not read PWD from .end. Had to use .json.
 const spicedPg = require('spiced-pg');
-// const db = spicedPg(`postgres:${USER}:${PWD}@localhost:5432/petition`);
-const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petition`);
+// console.log('u: ', USER);
+// console.log('p: ', PWD);
+const db = spicedPg(`postgres:${USER}:${PWD}@localhost:5432/petition`);
+// const db = spicedPg(`postgres:vladyslavtsurkanenko:sql123@localhost:5432/petition`);
 
 module.exports.selectAllDataFromSignaturesDB = () =>{
     return new Promise((resolve, reject) => {

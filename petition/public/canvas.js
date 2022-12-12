@@ -1,14 +1,14 @@
 console.log("js is connected");
 
-var canvas = document.getElementById("drawing");
-var context = canvas.getContext("2d");
+let canvas = document.getElementById("drawing");
+let context = canvas.getContext("2d");
 context.strokeStyle = "#000000";
 context.lineWidth = 5;
 context.lineJoin = "round";
 context.lineCap = "round";
-var isDrawing = false;
-var lastX = 0;
-var lastY = 0;
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
 canvas.addEventListener("mousedown", function (e) {
     isDrawing = true;
     lastX = e.offsetX;
@@ -32,7 +32,7 @@ canvas.addEventListener("mouseleave", function () {
 });
 
 
-//my setup
+//my setup for encoding
 
 const getBase64StringFromDataURL = (dataURL) =>
     dataURL.replace('data:', '').replace(/^.+,/, '');
@@ -43,24 +43,3 @@ btn.addEventListener("click", function () {
     const hiddenValue = document.getElementById("hidden").value = base64;
     console.log(hiddenValue);
 });
-
-
-
-
-
-
-
-// export canvasForBase64 = binaryBase64Image;
-// console.log(canvasForBase64);
-
-// module.exports.coordinates = canvas.addEventListener('mousedown', event => {
-//     const x = event.clientX;
-//     const y = event.clientY;
-//     const rect = canvas.getBoundingClientRect();
-//     console.log('getBoundingClientRect: ', rect);
-//     const canvasX = x - rect.left;
-//     const canvasY = y - rect.top;
-//     console.log('canvasX: ', canvasX);
-//     console.log('canvasY: ', canvasY);
-//     // draw at the (canvasX, canvasY) point on the canvas
-// });

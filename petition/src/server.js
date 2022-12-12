@@ -94,12 +94,17 @@ app.post('/petition', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
     let drawingCanvas = req.body.signature;
-    if(firstNameValuesSaved !== '' || secondNameValuesSaved !== '' || drawingCanvas !== ''){
+    if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && drawingCanvas !== ''){
+        console.log('do not draw');
         insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas);
     }
     
 
     if(firstNameValuesSaved === "" || secondNameValuesSaved === "" || drawingCanvas === ""){
+        // res.render("petition", {
+        //     showError: true, 
+        // });
+        // res.redirect('/petition');
         console.log('reached');
         showError = true, 
         res.redirect('/petition');
