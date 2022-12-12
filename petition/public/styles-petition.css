@@ -58,7 +58,9 @@ img{
     flex-direction: row;
     margin: 10px;
 }
-
+#row img{
+    width: 254px;
+}
 #inputs{
     display: flex;
     flex-direction: column;

@@ -39,3 +39,62 @@ btn.addEventListener("click", function () {
     const hiddenValue = document.getElementById("hidden").value = dataURL;
     console.log(hiddenValue);
 });
+
+
+const mathfloor = document.getElementById('1');
+
+
+function timeout() {
+    setTimeout(function () {
+        function generateRandomVal() {
+            return Math.floor(Math.random() * 256);
+        }
+        let r = generateRandomVal();
+        let g = generateRandomVal();
+        let b = generateRandomVal();
+        
+        let randomColor = "rgb(" + r + "," + g + "," + b + ")";
+        mathfloor.style.color = randomColor;
+        
+        timeout();
+    }, 100);
+}
+timeout();
+const mathfloor2 = document.getElementById('2');
+
+
+function timeout2() {
+    setTimeout(function () {
+        function generateRandomVal() {
+            return Math.floor(Math.random() * 256);
+        }
+        let r = generateRandomVal();
+        let g = generateRandomVal();
+        let b = generateRandomVal();
+        
+        let randomColor = "rgb(" + r + "," + g + "," + b + ")";
+        mathfloor2.style.color = randomColor;
+        
+        timeout2();
+    }, 100);
+}
+timeout2();
+const mathfloor3 = document.getElementById('3');
+
+
+function timeout3() {
+    setTimeout(function () {
+        function generateRandomVal() {
+            return Math.floor(Math.random() * 256);
+        }
+        let r = generateRandomVal();
+        let g = generateRandomVal();
+        let b = generateRandomVal();
+        
+        let randomColor = "rgb(" + r + "," + g + "," + b + ")";
+        mathfloor3.style.color = randomColor;
+        
+        timeout3();
+    }, 100);
+}
+timeout3();
