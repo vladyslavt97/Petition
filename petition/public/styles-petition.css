@@ -18,6 +18,7 @@ main{
 
 main {
     flex-grow: 1;
+    justify-content: space-evenly
 }
 
 footer {
@@ -43,6 +44,19 @@ img{
 
 .div-for-body {
     margin: 40px;
+}
+#patriot{
+    color: #0077FF;
+}
+#patriotp{
+    color: #F7FF00;
+}
+#row{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    margin: 10px;
 }
 
 #inputs{
@@ -79,10 +93,13 @@ h3, h1{
     padding-left: 5%;
     padding-right: 5%;
 }
+h3{
+    font-size: 15px;
+}
 
 p{
     padding: 0px 10px 0px 10px;
-    font-size: 16px;
+    font-size: 13px;
     line-height: 25px;
     color: rgb(255, 255, 255);
     text-shadow: 0px 0px 15px #4a0000;
@@ -97,6 +114,7 @@ form{
     background: rgb(215, 150, 0);
         background: linear-gradient(212deg, rgba(215, 150, 0, 1) 0%, rgb(89, 144, 1) 93%);
     border-radius: 10px;
+    /* width: 300px; */
 }
 input{
     border-radius: 5px;

@@ -121,7 +121,7 @@ app.post('/petition', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
     let drawingCanvas = req.body.signature;
-    if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && drawingCanvas !== ''){
+    if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && !drawingCanvas){
         insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas)
             .then((data)=>{
                 // console.log('data', data.rows[0].id);
