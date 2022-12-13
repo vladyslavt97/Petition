@@ -1,0 +1,13 @@
+<h3><em>Please, sign up here:</em></h3><br>
+{{#if showError}}
+<p id="error">FILL THE DATA!</p>
+{{/if}}
+<form action="/petition" method="POST" id="form-register-page">
+    <input type="text" name="firstNameValues" placeholder="First Name" >
+    <input type="text" name="secondNameValues" placeholder="Second Name">
+    <input type="text" name="emailValue" placeholder="Email">
+    <input type="text" name="passwordValue" placeholder="Password">
+    <button type="submit" href="/signin"> <b> Submit</b></button>
+</form>
+
+

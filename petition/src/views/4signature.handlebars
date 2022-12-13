@@ -1,0 +1,11 @@
+<script defer src="canvas.js"></script>
+<h3><em>Please, sign here:</em></h3><br>
+{{#if showError}}
+<p id="error">FILL SIGN!</p>
+{{/if}}
+<form action="/petition" method="POST" id="form-signature-page">
+    <canvas id="drawing" width="400" height="200" ></canvas>
+    <button type="submit" href="/thanks"> <b> Submit</b></button>
+    <input id="hidden" value="" style="display: none;" name="signature">
+</form>
+

@@ -40,23 +40,45 @@ app.use((req, res, next) => {
     }
     
 });
-// app.get('/thanks', (req, res, next)=>{
-    
-// });
+
 app.get('/', (req, res) => {
     res.redirect('/petition');
 });
 app.get("/petition", (req, res) => {
-    res.render("petition", {
+    res.render("1petition", {
         layout: "main",
         cohortName,
         createdBy,
-        showError:false, 
-        helpers: {
-            getStylesHelper: "/styles-petition.css" 
-        }
+        showError:false
     });
 });
+
+app.get("/register", (req, res) => {
+    res.render("2register", {
+        layout: "main",
+        cohortName,
+        createdBy,
+        showError:false
+    });
+});
+
+app.get("/signin", (req, res) => {
+    res.render("3signin", {
+        layout: "main",
+        cohortName,
+        createdBy,
+        showError:false
+    });
+});
+app.get("/signature", (req, res) => {
+    res.render("4signature", {
+        layout: "main",
+        cohortName,
+        createdBy,
+        showError:false
+    });
+});
+
 let numberofItems;
 let allDataRows;
 let infoOfUser;
@@ -71,16 +93,13 @@ app.get("/thanks", (req, res) => {
                 return el.id === req.session.signed;
             });
             final = infoOfUser.signature;
-            res.render("thanks", {
+            res.render("5thanks", {
                 layout: "main",
                 cohortName,
                 final,
                 numberofItems,
                 allDataRows,
-                createdBy, 
-                helpers: {
-                    getStylesHelper: "/styles-thanks.css" 
-                }
+                createdBy
             });
             
         })
@@ -88,25 +107,24 @@ app.get("/thanks", (req, res) => {
             console.log('error appeared for query 1: ', err);
         });
 });
+
 app.get("/signers", (req, res) => {
     selectAllDataFromSignaturesDB()
         .then(allData => {
             allDataRows = allData.rows;
-            res.render("signers", {
+            res.render("6signers", {
                 layout: "main",
                 numberofItems,
                 cohortName,
                 createdBy,
-                allDataRows, 
-                helpers: {
-                    getStylesHelper: "/styles-signers.css" 
-                }
+                allDataRows
             });
         })
         .catch(err => {
             console.log('error appeared for query: ', err);
         });
 });
+
 app.post('/petition', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
@@ -129,10 +147,7 @@ app.post('/petition', (req, res) => {
             layout: "main",
             cohortName,
             createdBy,
-            showError: true,  
-            helpers: {
-                getStylesHelper: "/styles-petition.css" 
-            }
+            showError: true
         });
     }
 
