@@ -59,6 +59,17 @@ form {
     -webkit-text-fill-color: transparent;
 }
 
+#btns-petition{
+    display: flex;
+    flex-direction: row;
+}
+
+#btns-petition a{
+    border: 4px solid #ff9d01;
+    background-color: antiquewhite;
+    padding: 5px 20px 5px 20px;
+    border-radius: 10px;
+}
 
 em{
     letter-spacing: 2px;

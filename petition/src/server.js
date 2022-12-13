@@ -2,12 +2,14 @@ const express = require("express");
 const app = express();
 const helmet = require("helmet");
 const { selectAllDataFromSignaturesDB, insertDataIntoSignatureDB } = require('./db');
-// const cookieParser = require('cookie-parser');
+const { hashPass, compare} = require("./encrypt");
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 // End of setup
+
+
 let showError = false;
 app.use(express.static("../public"));
 const urlEncodedMiddleware = express.urlencoded({ extended: false });
@@ -15,8 +17,7 @@ app.use(urlEncodedMiddleware);
 app.use(helmet());
 const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
-///cookie midleware setup OLD
-// app.use(cookieParser());
+
 //cookiesSession NEW
 const cookieSession = require("cookie-session");
 // const {SESSION_SECRET} = process.env;
@@ -26,11 +27,24 @@ app.use(
         maxAge: 1000*60*60*24*14
     })
 );
+
+//                                                              USE
+app.get('/', (req, res) => {
+    res.redirect('/petition');
+});
 app.use((req, res, next) => {
-    // console.log('req.session.signed', req.session.signed);
+    //with cookies
     if (req.url.startsWith("/petition") && req.session.signed) {
-        res.redirect("/thanks");   
-        // console.log('redirect!!');
+        res.redirect("/thanks");
+    } else if (req.url.startsWith("/register") && req.session.signed) {
+        res.redirect("/thanks");
+    } else if (req.url.startsWith("/signin") && req.session.signed) {
+        res.redirect("/thanks");
+    } else if (req.url.startsWith("/signature") && req.session.signed) {
+        res.redirect("/thanks");
+    //if no cookies
+    } else if (req.url.startsWith("/signature") && !req.session.signed) {
+        res.redirect("/petition");
     } else if (req.url.startsWith("/thanks") && !req.session.signed) {
         res.redirect("/petition"); 
     } else if (req.url.startsWith("/signers") && !req.session.signed) {
@@ -38,22 +52,17 @@ app.use((req, res, next) => {
     } else {
         next();
     }
-    
 });
-
-app.get('/', (req, res) => {
-    res.redirect('/petition');
-});
-app.get("/petition", (req, res) => {
+//                                                        middleware ends here                                            \\
+// get routes
+app.get("/petition", (req, res) => { //petition has two simple buttons
     res.render("1petition", {
         layout: "main",
         cohortName,
         createdBy,
-        showError:false
     });
 });
-
-app.get("/register", (req, res) => {
+app.get("/register", (req, res) => { //register page should have 4 validators
     res.render("2register", {
         layout: "main",
         cohortName,
@@ -61,8 +70,7 @@ app.get("/register", (req, res) => {
         showError:false
     });
 });
-
-app.get("/signin", (req, res) => {
+app.get("/signin", (req, res) => { //register page should have 2 validators
     res.render("3signin", {
         layout: "main",
         cohortName,
@@ -70,7 +78,7 @@ app.get("/signin", (req, res) => {
         showError:false
     });
 });
-app.get("/signature", (req, res) => {
+app.get("/signature", (req, res) => { //register page should have 2 validators (is done!!!)
     res.render("4signature", {
         layout: "main",
         cohortName,
@@ -124,26 +132,59 @@ app.get("/signers", (req, res) => {
             console.log('error appeared for query: ', err);
         });
 });
+//get routes are above
 
-app.post('/petition', (req, res) => {
+//                                                              POST
+//registration post
+app.post('/register', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
     let secondNameValuesSaved = req.body.secondNameValues;
-    let drawingCanvas = req.body.signature;
-    if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && drawingCanvas !== ''){
-        // if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && !drawingCanvas){
-        insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, drawingCanvas)
+    let emailValueSaved = req.body.emailValue;
+    let passwordValueSaved = req.body.passwordValue;
+    // save a new user
+    // hash the password before saving to the Database
+    // save cookies and redirect to Signature Page.
+    if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && passwordValueSaved !== ''){
+        insertDataIntoSignatureDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, passwordValueSaved)
             .then((data)=>{
-                // console.log('data', data.rows[0].id);
                 showError = false, 
-                // res.cookie('accepted', 'on');
                 req.session.signed = data.rows[0].id;
-                res.redirect('/thanks');
+                res.redirect('/signin');
             })
             .catch((err) => {
                 console.log(err);
             });
     } else {
-        res.render("petition", {
+        res.render("2register", {
+            layout: "main",
+            cohortName,
+            createdBy,
+            showError: true
+        });
+    }
+    
+});
+//registration above
+//signin post
+app.post('/signin', (req, res) => {
+    let emailValueSaved = req.body.emailValue;
+    let passwordValueSaved = req.body.passwordValue;
+    //first check if the user exists in your database
+    //if he/she exists then compare if the password matches
+    if(emailValueSaved !== '' && passwordValueSaved !== ''){
+        insertDataIntoSignatureDB(emailValueSaved, passwordValueSaved)
+            .then((data)=>{
+                showError = false, 
+                req.session.signed = data.rows[0].id;
+                res.redirect('/signature'); //go to the signature table to see if this use already signed
+                //if the user has already signed, redirect to Thanks Page (done in middleware)
+                //otherwise redirect to signature page (done above)
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    } else {
+        res.render("3signin", {
             layout: "main",
             cohortName,
             createdBy,
@@ -152,5 +193,30 @@ app.post('/petition', (req, res) => {
     }
 
 });
+//signin above
+//signature post
+app.post('/signature', (req, res) => {
+    let drawingCanvas = req.body.signature;
+    if(drawingCanvas){
+        insertDataIntoSignatureDB(drawingCanvas)
+            .then((data)=>{
+                showError = false, 
+                req.session.signed = data.rows[0].id;
+                res.redirect('/thanks');
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    } else {
+        res.render("4signature", {
+            layout: "main",
+            cohortName,
+            createdBy,
+            showError: true
+        });
+    }
+
+});
+//signature above
 
 app.listen(3000, console.log("Petition: running server at 3000..."));

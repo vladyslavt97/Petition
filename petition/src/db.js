@@ -11,7 +11,7 @@ module.exports.selectAllDataFromSignaturesDB = () =>{
     });
 };
 
-module.exports.insertDataIntoSignatureDB = (firstNameValuesSaved, secondNameValuesSaved, drawingCanvas) => { //  - addSignature
+module.exports.insertDataIntoSignatureDB = (firstNameValuesSaved, secondNameValuesSaved, drawingCanvas) => {
     return db.query(`INSERT INTO signatures (firstname, lastname, signature) VALUES ($1, $2, $3) RETURNING *;`, [firstNameValuesSaved, secondNameValuesSaved, drawingCanvas]);
 };
 
