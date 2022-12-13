@@ -3,9 +3,9 @@
 {{#if showError}}
 <p id="error">FILL SIGN!</p>
 {{/if}}
-<form action="/petition" method="POST" id="form-signature-page">
+<form action="/signature" method="POST" id="form-signature-page">
     <canvas id="drawing" width="400" height="200" ></canvas>
-    <button type="submit" href="/thanks"> <b> Submit</b></button>
+    <button type="submit" href="/thanks"> Submit</button>
     <input id="hidden" value="" style="display: none;" name="signature">
 </form>
 

@@ -71,6 +71,10 @@ form {
     border-radius: 10px;
 }
 
+#number-thanks-page{
+    color: white;
+}
+
 em{
     letter-spacing: 2px;
 }

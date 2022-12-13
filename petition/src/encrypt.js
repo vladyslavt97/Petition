@@ -1,6 +1,6 @@
 const {genSalt, hash, compare} = require("bcryptjs");
 
-exports.hash = password => {
+exports.hashPass = password => {
     return genSalt().then(salt => {
         return hash(password, salt);
     });
