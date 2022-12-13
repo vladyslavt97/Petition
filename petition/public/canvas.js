@@ -41,9 +41,7 @@ btn.addEventListener("click", function () {
 });
 
 
-const mathfloor = document.getElementById('1');
-
-
+const arrow1 = document.getElementById('1');
 function timeout() {
     setTimeout(function () {
         function generateRandomVal() {
@@ -54,15 +52,13 @@ function timeout() {
         let b = generateRandomVal();
         
         let randomColor = "rgb(" + r + "," + g + "," + b + ")";
-        mathfloor.style.color = randomColor;
+        arrow1.style.color = randomColor;
         
         timeout();
     }, 100);
 }
 timeout();
-const mathfloor2 = document.getElementById('2');
-
-
+const arrow2 = document.getElementById('2');
 function timeout2() {
     setTimeout(function () {
         function generateRandomVal() {
@@ -73,15 +69,13 @@ function timeout2() {
         let b = generateRandomVal();
         
         let randomColor = "rgb(" + r + "," + g + "," + b + ")";
-        mathfloor2.style.color = randomColor;
+        arrow2.style.color = randomColor;
         
         timeout2();
     }, 100);
 }
 timeout2();
-const mathfloor3 = document.getElementById('3');
-
-
+const arrow3 = document.getElementById('3');
 function timeout3() {
     setTimeout(function () {
         function generateRandomVal() {
@@ -92,9 +86,52 @@ function timeout3() {
         let b = generateRandomVal();
         
         let randomColor = "rgb(" + r + "," + g + "," + b + ")";
-        mathfloor3.style.color = randomColor;
+        arrow3.style.color = randomColor;
         
         timeout3();
     }, 100);
 }
 timeout3();
+// const text = arrows.textContent;
+// const array = text.split("");
+// console.log('array: ', array);
+// const array = [1, 2, 3];
+// //random index
+// let actualRandomIndex;
+// function timeoutForArray() {
+//     setTimeout(function () {
+//         function generateRandomIndex() {
+//             let randomIndex = Math.floor(Math.random() * array.length);
+//             actualRandomIndex = array[randomIndex];
+//             // console.log('actualRandomIndex: ', actualRandomIndex);
+//             // console.log('randomIndex: ', randomIndex);
+//             return  actualRandomIndex;
+//         }
+//         generateRandomIndex();
+       
+//         // random color
+//         function timeout() {
+//             setTimeout(function () {
+//                 function generateRandomVal() {
+//                     return Math.floor(Math.random() * 256);
+//                 }
+//                 let r = generateRandomVal();
+//                 let g = generateRandomVal();
+//                 let b = generateRandomVal();
+                
+//                 let randomColor = "rgb(" + r + "," + g + "," + b + ")";
+//                 let arrowCreatedHtml = document.createElement('i');
+//                 console.log('arrowCreatedHtml', arrowCreatedHtml);
+//                 arrowCreatedHtml.innerHTML = actualRandomIndex;
+//                 console.log('actualRandomIndex', actualRandomIndex);
+//                 arrowCreatedHtml.style.color = randomColor;
+                
+//                 timeout();
+//             }, 2000);
+//         }
+//         timeout();
+//         //end of random color function
+//         timeoutForArray();
+//     }, 2000);
+// }
+// timeoutForArray();
