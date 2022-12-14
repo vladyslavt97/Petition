@@ -1,7 +1,7 @@
 require('dotenv').config();
-const { USER_DB, PWD_DB } = process.env;
+const {DATABASE_URL} = process.env;
 const spicedPg = require('spiced-pg');
-const db = spicedPg(`postgres:${USER_DB}:${PWD_DB}@localhost:5432/petition`);
+const db = spicedPg(DATABASE_URL);
 
 module.exports.selectAllDataFromUsersDB = () =>{
     return new Promise((resolve, reject) => {
@@ -39,11 +39,14 @@ module.exports.selectAllDataFromUserProfilesDB = () =>{
 };
 
 module.exports.insertDataIntoUserProfilesDB = (ageValueSaved, cityValueSaved, homepageValueSaved, userID) => {
-    return db.query(`INSERT INTO user_profiles (city, age, homepage, user_id) VALUES ($1, $2, $3, $4) RETURNING id;`,[ageValueSaved, cityValueSaved, homepageValueSaved, userID]);
+    return db.query(`INSERT INTO user_profiles (city, age, homepage, user_id) VALUES ($1, $2, $3, $4) RETURNING id;`,[cityValueSaved, ageValueSaved, homepageValueSaved, userID]);
 };
-
-module.exports.joinUsersAndUserProfilesDBs = () => { 
-    return db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles_id;`);
+//join
+module.exports.selectJoinUsersAndUserProfilesDBs = () => { 
+    return db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id;`);
     //  with FULL OUTER JOIN to get the data from users and user_profiles table
 };
 
+module.exports.selectSignersFromSpecificCities = (cityNextToAge) => { //you will need a new function in your db.js where you want to get signers from a specific city
+    return db.query(`SELECT * FROM user_profiles WHERE city = $1;`, [cityNextToAge]); //not cityValueSaved!!! but the value which we are clicking on next to the age
+};

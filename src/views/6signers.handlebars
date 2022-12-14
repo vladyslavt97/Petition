@@ -1,0 +1,21 @@
+{{!-- insert link in handlebars file for the name if the person has a homepage
+insert link in handlebars file for the city if the person has provided a city --}}
+<ol>
+    {{#each allDataRows}}
+    <li>
+        {{#if linkProvided}}
+        <a href="{{homepage}}" target="_blank">{{ first}} {{last}}</a> {{age}}
+        {{else}}
+        {{ first}} {{last}} {{age}}
+        {{/if}}
+
+        {{#if cityProvided}}
+        <a href="/{{url}}">{{city}}</a> 
+        {{else}}
+        {{city}}
+        {{/if}}
+    </li>
+    {{/each}}
+</ol>
+
+

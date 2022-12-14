@@ -1,8 +1,9 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs } = require('./db');
 const { hashPass, compare} = require("./encrypt");
+const PORT = 3000;
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
@@ -138,6 +139,8 @@ app.get("/thanks", (req, res) => {
 });
 
 app.get("/signers", (req, res) => {
+    selectJoinUsersAndUserProfilesDBs()
+        .then()
     selectAllDataFromUsersDB()
         .then(allData => {
             allDataRows = allData.rows;
@@ -154,7 +157,7 @@ app.get("/signers", (req, res) => {
         });
 });
 //
-// :projectDirectory is a placeholder and will be put in req.params object
+// :city is a placeholder and will be put in req.params object
 app.get('/signers/:city', (req, res) => {
     const projectDirectory = req.params.projectDirectory; // 'kitty-caroussel';
     const selectedCity = projects.find(p => {
@@ -202,7 +205,7 @@ app.post('/register', (req, res) => {
                 .then((data)=>{
                     showError = false, 
                     req.session.signed = data.rows[0].id;
-                    res.redirect('/signature');
+                    res.redirect('/user-profile');
                 })
                 .catch((err) => {
                     console.log(err);
@@ -311,6 +314,8 @@ app.post('/signature', (req, res) => {
 });
 //signature above
 
-app.listen(3000, console.log("Petition: running server at 3000..."));
+app.listen(process.env.PORT || PORT, () => {
+    console.log(`Petition: running server at ${PORT}...`);
+} );
 
 
