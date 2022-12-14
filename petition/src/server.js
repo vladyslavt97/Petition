@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 // Handlebars Setup
 const { engine } = require("express-handlebars");
@@ -90,6 +90,7 @@ app.get("/user-profile", (req, res) => { //register page should have 4 validator
         showError:false
     });
 });
+
 app.get("/signin", (req, res) => { //register page should have 2 validators
     res.render("3signin", {
         layout: "main",
@@ -152,6 +153,35 @@ app.get("/signers", (req, res) => {
             console.log('error appeared for query: ', err);
         });
 });
+//
+// :projectDirectory is a placeholder and will be put in req.params object
+app.get('/signers/:city', (req, res) => {
+    const projectDirectory = req.params.projectDirectory; // 'kitty-caroussel';
+    const selectedCity = projects.find(p => {
+        return p.url === projectDirectory;
+    });
+    
+    if (selectedCity === undefined){// TASK: check if selectedProject is undefined.
+        res.status(404).send("Wrong request"); //      if it is undefined. set statuscode 404 and send response.
+    }
+
+    res.render('show-lists', {
+        layout: "main",
+        projects: projects,
+        showImage: false,
+        selectedCity: selectedCity,
+        helpers: {
+            getStylesHelper: "/stylesforprojects.css",
+            getActiveClass: (url) => {
+                // console.log(selectedProject);
+                if(selectedProject.url === url){
+                    return 'active';
+                }  
+            }
+        }
+    });
+});
+
 //get routes are above
 
 //                                          POST
@@ -239,8 +269,22 @@ app.post('/signin', (req, res) => {
         });
 });
 //signin above
+//user-profile post
+app.post('/user-profile', (req, res) => {
+    let ageValueSaved = req.body.ageValue;
+    let cityValueSaved = req.body.cityValue;
+    let homepageValueSaved = req.body.homepageValue;
+    let userID = req.session.signed;
+    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, userID)
+        .then((data)=>{
+            req.session.signed = data.rows[0].id;
+            res.redirect('/signature');
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+});
 //signature post
-// let userID;
 app.post('/signature', (req, res) => {
     let drawingCanvas = req.body.signature; //works
     let userID = req.session.signed;
@@ -268,3 +312,5 @@ app.post('/signature', (req, res) => {
 //signature above
 
 app.listen(3000, console.log("Petition: running server at 3000..."));
+
+

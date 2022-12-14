@@ -79,6 +79,10 @@ li{
     color: white;
 }
 
+#not-mandatory-answers-text{
+    color: white;
+}
+
 em{
     letter-spacing: 2px;
 }
