@@ -1,0 +1,11 @@
+<h3><em>Please, share some info with us:</em></h3><br>
+<h4><em>the answers are not mandatory!</em></h4>
+{{#if showError}}
+<p id="error">FILL THE DATA!</p>
+{{/if}}
+<form action="/user-profile" method="POST" id="form-user-profile-page">
+    <input type="text" name="ageValue" placeholder="Age">
+    <input type="text" name="cityValue" placeholder="City">
+    <input type="text" name="homepageValue" placeholder="Your website">
+    <button type="submit" href="/signature"> <b> Submit</b></button>
+</form>

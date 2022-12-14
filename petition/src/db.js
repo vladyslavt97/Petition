@@ -25,6 +25,6 @@ module.exports.selectAllDataFromSignaturesDB = () =>{
     });
 };
 
-module.exports.insertDataIntoSignatureDB = (drawingCanvas, userId) => {
-    return db.query(`INSERT INTO signatures (signature, user_id) VALUES ($1, $2) RETURNING id;`,[drawingCanvas, 1]);
+module.exports.insertDataIntoSignatureDB = (drawingCanvas, userID) => {
+    return db.query(`INSERT INTO signatures (signature, user_id) VALUES ($1, $2) RETURNING id;`,[drawingCanvas, userID]);
 };

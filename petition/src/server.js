@@ -82,6 +82,14 @@ app.get("/register", (req, res) => { //register page should have 4 validators
         showError:false
     });
 });
+app.get("/user-profile", (req, res) => { //register page should have 4 validators
+    res.render("3userprofile", {
+        layout: "main",
+        cohortName,
+        createdBy,
+        showError:false
+    });
+});
 app.get("/signin", (req, res) => { //register page should have 2 validators
     res.render("3signin", {
         layout: "main",
@@ -98,7 +106,8 @@ app.get("/signature", (req, res) => { //register page should have 2 validators (
         showError:false
     });
 });
-
+// user id
+// signed or not
 let numberofItems;
 let allDataRows;
 let infoOfUser;
@@ -108,7 +117,6 @@ app.get("/thanks", (req, res) => {
         .then(allData => {
             // console.log('allData', allData);
             numberofItems = allData.rows.length;
-            // console.log('numberofItems ? 0', numberofItems);
             infoOfUser = allData.rows.find(el => {
                 return el.id === req.session.signed;
             });
@@ -154,11 +162,29 @@ app.post('/register', (req, res) => {
     let emailValueSaved = req.body.emailValue;
     let passwordValueSavedd = req.body.passwordValue;
     //
-    let passwordValueSaved = hashPass(passwordValueSavedd).then((hashedPassword) => {
-        console.log(hashedPassword);
+    hashPass(passwordValueSavedd).then((hashedPassword) => {
+        // console.log(hashedPassword);
         // compare(str, hashedPassword).then((boolean)=>{
         //     console.log(`match: ${boolean}`);
         // });
+        if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && hashedPassword !== ''){
+            insertDataIntoUsersDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, hashedPassword)
+                .then((data)=>{
+                    showError = false, 
+                    req.session.signed = data.rows[0].id;
+                    res.redirect('/signature');
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        } else {
+            res.render("2register", {
+                layout: "main",
+                cohortName,
+                createdBy,
+                showError: true
+            });
+        }
     });
     //
     // save a new user || grab the user input and read it on the server
@@ -170,24 +196,6 @@ app.post('/register', (req, res) => {
     // INSERT for signatures table needs to be changed to include the user_id (in post /petition)
     // SELECT from signature to find out if they've signed (post /login)
     //
-    if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && passwordValueSaved !== ''){
-        insertDataIntoUsersDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, passwordValueSaved)
-            .then((data)=>{
-                showError = false, 
-                req.session.signed = data.rows[0].id;
-                res.redirect('/signature');
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    } else {
-        res.render("2register", {
-            layout: "main",
-            cohortName,
-            createdBy,
-            showError: true
-        });
-    }
     
 });
 //registration above
@@ -197,35 +205,47 @@ app.post('/signin', (req, res) => {
     let passwordValueSaved = req.body.passwordValue;
     //first check if the user exists in your database
     //if he/she exists then compare if the password matches
-    if(emailValueSaved !== '' && passwordValueSaved !== ''){
-        insertDataIntoUsersDB(emailValueSaved, passwordValueSaved)
-            .then((data)=>{
-                showError = false, 
-                req.session.signed = data.rows[0].id;
-                res.redirect('/signature'); //go to the signature table to see if this use already signed
-                //if the user has already signed, redirect to Thanks Page (done in middleware)
-                //otherwise redirect to signature page (done above)
-            })
-            .catch((err) => {
-                console.log(err);
+    selectAllDataFromUsersDB()
+        .then((allData) => {
+            // console.log('allData: ', allData.rows[0].password);
+            //check email as well
+            let pwdOfUSer = allData.rows[0].password;
+            // let pwdOfUSer = allData.rows[password];
+            compare(passwordValueSaved, pwdOfUSer).then((boolean)=>{
+                console.log(`match: ${boolean}`);
+                if(boolean === true){
+                    if(emailValueSaved !== '' && passwordValueSaved !== ''){
+                        insertDataIntoUsersDB(emailValueSaved, passwordValueSaved)
+                            .then((data)=>{
+                                showError = false, 
+                                req.session.signed = data.rows[0].id;
+                                res.redirect('/thanks'); //go to the signature table to see if this use already signed
+                                //if the user has already signed, redirect to Thanks Page (done in middleware)
+                                //otherwise redirect to signature page (done above)
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                            });
+                    } else {
+                        res.render("3signin", {
+                            layout: "main",
+                            cohortName,
+                            createdBy,
+                            showError: true
+                        });
+                    }
+                }
             });
-    } else {
-        res.render("3signin", {
-            layout: "main",
-            cohortName,
-            createdBy,
-            showError: true
         });
-    }
-
 });
 //signin above
 //signature post
+// let userID;
 app.post('/signature', (req, res) => {
     let drawingCanvas = req.body.signature; //works
-    console.log('req.session: ', req.session);
+    let userID = req.session.signed;
     if(drawingCanvas){
-        insertDataIntoSignatureDB(drawingCanvas, req.session.userId)
+        insertDataIntoSignatureDB(drawingCanvas, userID)
             .then((data)=>{
                 console.log('got here');
                 showError = false, 
