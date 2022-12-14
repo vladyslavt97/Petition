@@ -12,7 +12,7 @@ app.set("view engine", "handlebars");
 
 
 let showError = false;
-app.use(express.static("../public"));
+app.use(express.static("./public"));
 const urlEncodedMiddleware = express.urlencoded({ extended: false });
 app.use(urlEncodedMiddleware);
 app.use(helmet());
@@ -139,8 +139,8 @@ app.get("/thanks", (req, res) => {
 });
 
 app.get("/signers", (req, res) => {
-    selectJoinUsersAndUserProfilesDBs()
-        .then()
+    // selectJoinUsersAndUserProfilesDBs()
+    //     .then()
     selectAllDataFromUsersDB()
         .then(allData => {
             allDataRows = allData.rows;
@@ -158,32 +158,32 @@ app.get("/signers", (req, res) => {
 });
 //
 // :city is a placeholder and will be put in req.params object
-app.get('/signers/:city', (req, res) => {
-    const projectDirectory = req.params.projectDirectory; // 'kitty-caroussel';
-    const selectedCity = projects.find(p => {
-        return p.url === projectDirectory;
-    });
+// app.get('/signers/:city', (req, res) => {
+//     const projectDirectory = req.params.projectDirectory; // 'kitty-caroussel';
+//     const selectedCity = projects.find(p => {
+//         return p.url === projectDirectory;
+//     });
     
-    if (selectedCity === undefined){// TASK: check if selectedProject is undefined.
-        res.status(404).send("Wrong request"); //      if it is undefined. set statuscode 404 and send response.
-    }
+//     if (selectedCity === undefined){// TASK: check if selectedProject is undefined.
+//         res.status(404).send("Wrong request"); //      if it is undefined. set statuscode 404 and send response.
+//     }
 
-    res.render('show-lists', {
-        layout: "main",
-        projects: projects,
-        showImage: false,
-        selectedCity: selectedCity,
-        helpers: {
-            getStylesHelper: "/stylesforprojects.css",
-            getActiveClass: (url) => {
-                // console.log(selectedProject);
-                if(selectedProject.url === url){
-                    return 'active';
-                }  
-            }
-        }
-    });
-});
+//     res.render('show-lists', {
+//         layout: "main",
+//         projects: projects,
+//         showImage: false,
+//         selectedCity: selectedCity,
+//         helpers: {
+//             getStylesHelper: "/stylesforprojects.css",
+//             getActiveClass: (url) => {
+//                 // console.log(selectedProject);
+//                 if(selectedProject.url === url){
+//                     return 'active';
+//                 }  
+//             }
+//         }
+//     });
+// });
 
 //get routes are above
 
@@ -291,6 +291,7 @@ app.post('/user-profile', (req, res) => {
 app.post('/signature', (req, res) => {
     let drawingCanvas = req.body.signature; //works
     let userID = req.session.signed;
+    console.log(userID);
     if(drawingCanvas){
         insertDataIntoSignatureDB(drawingCanvas, userID)
             .then((data)=>{
