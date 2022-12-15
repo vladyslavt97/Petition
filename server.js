@@ -4,6 +4,8 @@ const helmet = require("helmet");
 const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
+
+
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
@@ -19,12 +21,11 @@ app.use(helmet());
 const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
-//cookiesSession NEW
 const cookieSession = require("cookie-session");
-// const {SESSION_SECRET} = process.env;
+const {SESSION_SECRET} = process.env;
 app.use(
     cookieSession({
-        secret: `try`, //process.env.SESSION_SECRET,
+        secret: process.env.SESSION_SECRET,
         maxAge: 1000*60*60*24*14
     })
 );
@@ -34,48 +35,60 @@ app.get('/', (req, res) => {
     res.redirect('/petition');
 });
 app.use((req, res, next) => {
-    //with cookies
-    if (req.url.startsWith("/petition") && req.session.signed) {
+    // console.log('req.session use 1: ', req.session); //just (req.session:  Session { signed: 4 })
+    if (req.url.startsWith("/petition") && req.session.signedIn) {
         res.redirect("/thanks");
-    } else if (req.url.startsWith("/register") && req.session.signed) {
+    } else if (req.url.startsWith("/register") && req.session.signedIn) {
         res.redirect("/thanks");
-    } else if (req.url.startsWith("/signin") && req.session.signed) {
+    } else if (req.url.startsWith("/signin") && req.session.signedIn) {
         res.redirect("/thanks");
-        // } else if (req.url.startsWith("/signature") && req.session.signed) {
+    // } else if (req.url.startsWith("/user-profile") && req.session.signedIn) {
+    //     res.redirect("/thanks");
+        // } else if (req.url.startsWith("/signature") && req.session.sigsignedInned) {
         //     res.redirect("/thanks");
-    //if no cookies
-    } else if (req.url.startsWith("/signature") && !req.session.signed) {
+    } else if (req.url.startsWith("/signature") && !req.session.signedIn) {
         res.redirect("/petition");
-    } else if (req.url.startsWith("/thanks") && !req.session.signed) {
+    } else if (req.url.startsWith("/thanks") && !req.session.signedIn) {
         res.redirect("/petition"); 
-    } else if (req.url.startsWith("/signers") && !req.session.signed) {
+    } else if (req.url.startsWith("/signers") && !req.session.signedIn) {
         res.redirect("/petition");
     } else {
         next();    }
 });
 
-//                                                       middleware ends here                                            \\
-//                                                              GET
-// 
-// app.get("/hashing", (req, res)=>{ //TODO works but comparison is always true
-//     const str = "MintCohort";
-//     hashPass(str).then((hashedPassword) => {
-//         console.log(hashedPassword);
-//         compare(str, hashedPassword).then((boolean)=>{
-//             console.log(`match: ${boolean}`);
-//         });
-//     });
-// });
+//need to save user_id property somewhere === userProfileID (for age, city homepage, if entered)
+app.use((req, res, next) => {
+    console.log('req.session.userProfileID', req.session.userProfileID);
+    if (req.url.startsWith("/user-profile") && req.session.userProfileID) {
+        res.redirect("/thanks");
+    } else {
+        next();    }
+});
+// signedWithSignature or not
+app.use((req, res, next) => {
+    console.log('req.session.signedWithSignature', req.session.signedWithSignature);
+    if (req.url.startsWith("/signature") && req.session.signedWithSignature) {
+        res.redirect("/thanks");
+    } else {
+        next();    }
+});
+//                                                       middleware ends here                                            
 
-// get routes
-app.get("/petition", (req, res) => { //petition has two simple buttons
+
+
+
+
+
+
+//                                                              GET
+app.get("/petition", (req, res) => { //two simple buttons
     res.render("1petition", {
         layout: "main",
         cohortName,
         createdBy,
     });
 });
-app.get("/register", (req, res) => { //register page should have 4 validators
+app.get("/register", (req, res) => { //should have 4 validators
     res.render("2register", {
         layout: "main",
         cohortName,
@@ -83,16 +96,8 @@ app.get("/register", (req, res) => { //register page should have 4 validators
         showError:false
     });
 });
-app.get("/user-profile", (req, res) => { //register page should have 4 validators
-    res.render("3userprofile", {
-        layout: "main",
-        cohortName,
-        createdBy,
-        showError:false
-    });
-});
 
-app.get("/signin", (req, res) => { //register page should have 2 validators
+app.get("/signin", (req, res) => { //2 validators
     res.render("3signin", {
         layout: "main",
         cohortName,
@@ -100,31 +105,38 @@ app.get("/signin", (req, res) => { //register page should have 2 validators
         showError:false
     });
 });
-app.get("/signature", (req, res) => { //register page should have 2 validators (is done!!!)
-    res.render("4signature", {
+app.get("/user-profile", (req, res) => { //3 validators
+    res.render("4userprofile", {
         layout: "main",
         cohortName,
         createdBy,
         showError:false
     });
 });
-// user id
-// signed or not
+app.get("/signature", (req, res) => { // 1 validation
+    res.render("5signature", {
+        layout: "main",
+        cohortName,
+        createdBy,
+        showError:false
+    });
+});
+
 let numberofItems;
 let allDataRows;
 let infoOfUser;
 let final;
-app.get("/thanks", (req, res) => {
+app.get("/thanks", (req, res) => { //works!!!
     selectAllDataFromSignaturesDB()
         .then(allData => {
-            // console.log('allData', allData);
             numberofItems = allData.rows.length;
-            infoOfUser = allData.rows.find(el => {
-                return el.id === req.session.signed;
+            infoOfUser = allData.rows.find(el => {//infoOfUSer = id:16, signature: data.., user_id: 16; created_at;
+                // console.log('el.id: ', el.id); //el.id = 2,3,11, 12,....
+                return el.id === req.session.signedWithSignature;
             });
-            // console.log('infoOfUser undefined?', infoOfUser);
+            console.log('infoOfUser', infoOfUser);// undefined WHY???
             final = infoOfUser.signature;
-            res.render("5thanks", {
+            res.render("6thanks", {
                 layout: "main",
                 cohortName,
                 final,
@@ -136,15 +148,16 @@ app.get("/thanks", (req, res) => {
         .catch(err => {
             console.log('error appeared for query to get data from signatures table: ', err);
         });
-});
+});///works!!!
 
-app.get("/signers", (req, res) => {
-    // selectJoinUsersAndUserProfilesDBs()
-    //     .then()
-    selectAllDataFromUsersDB()
+app.get("/signers", (req, res) => {//first, last (users table);  //age city homepage (user_profiles table)
+    selectJoinUsersAndUserProfilesDBs()//we get everything from here: first, last (users table);//age city homepage (user_profiles table)
         .then(allData => {
+            // console.log('allData from merged tables: ', allData);//+
+            
             allDataRows = allData.rows;
-            res.render("6signers", {
+            console.log('allDataRows: ', allDataRows);
+            res.render("7signers", {
                 layout: "main",
                 numberofItems,
                 cohortName,
@@ -168,7 +181,7 @@ app.get("/signers", (req, res) => {
 //         res.status(404).send("Wrong request"); //      if it is undefined. set statuscode 404 and send response.
 //     }
 
-//     res.render('show-lists', {
+//     res.render('8signerscities', {
 //         layout: "main",
 //         projects: projects,
 //         showImage: false,
@@ -176,7 +189,6 @@ app.get("/signers", (req, res) => {
 //         helpers: {
 //             getStylesHelper: "/stylesforprojects.css",
 //             getActiveClass: (url) => {
-//                 // console.log(selectedProject);
 //                 if(selectedProject.url === url){
 //                     return 'active';
 //                 }  
@@ -196,7 +208,6 @@ app.post('/register', (req, res) => {
     let passwordValueSavedd = req.body.passwordValue;
     //
     hashPass(passwordValueSavedd).then((hashedPassword) => {
-        // console.log(hashedPassword);
         // compare(str, hashedPassword).then((boolean)=>{
         //     console.log(`match: ${boolean}`);
         // });
@@ -204,7 +215,7 @@ app.post('/register', (req, res) => {
             insertDataIntoUsersDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, hashedPassword)
                 .then((data)=>{
                     showError = false, 
-                    req.session.signed = data.rows[0].id;
+                    req.session.signedIn = data.rows[0].id;
                     res.redirect('/user-profile');
                 })
                 .catch((err) => {
@@ -227,7 +238,7 @@ app.post('/register', (req, res) => {
     // INSERT in users table (in post /registration)
     // SELECT to get user info by email address (in post /login)
     // INSERT for signatures table needs to be changed to include the user_id (in post /petition)
-    // SELECT from signature to find out if they've signed (post /login)
+    // SELECT from signature to find out if they've signedIn (post /login)
     //
     
 });
@@ -240,20 +251,19 @@ app.post('/signin', (req, res) => {
     //if he/she exists then compare if the password matches
     selectAllDataFromUsersDB()
         .then((allData) => {
-            // console.log('allData: ', allData.rows[0].password);
             //check email as well
             let pwdOfUSer = allData.rows[0].password;
             // let pwdOfUSer = allData.rows[password];
             compare(passwordValueSaved, pwdOfUSer).then((boolean)=>{
-                console.log(`match: ${boolean}`);
+                // console.log(`match: ${boolean}`);
                 if(boolean === true){
                     if(emailValueSaved !== '' && passwordValueSaved !== ''){
                         insertDataIntoUsersDB(emailValueSaved, passwordValueSaved)
                             .then((data)=>{
                                 showError = false, 
-                                req.session.signed = data.rows[0].id;
-                                res.redirect('/thanks'); //go to the signature table to see if this use already signed
-                                //if the user has already signed, redirect to Thanks Page (done in middleware)
+                                req.session.signedIn = data.rows[0].id;
+                                res.redirect('/thanks'); //go to the signature table to see if this use already signedIn
+                                //if the user has already signedIn, redirect to Thanks Page (done in middleware)
                                 //otherwise redirect to signature page (done above)
                             })
                             .catch((err) => {
@@ -272,15 +282,16 @@ app.post('/signin', (req, res) => {
         });
 });
 //signin above
-//user-profile post
+//user-profile
 app.post('/user-profile', (req, res) => {
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
-    let userID = req.session.signed;
+    let userID = req.session.signedIn;
     insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, userID)
         .then((data)=>{
-            req.session.signed = data.rows[0].id;
+            console.log('ID of the user_profile inserted: ', data.rows[0].id);
+            req.session.userProfileID = data.rows[0].id;
             res.redirect('/signature');
         })
         .catch((err) => {
@@ -289,17 +300,17 @@ app.post('/user-profile', (req, res) => {
 });
 //signature post
 app.post('/signature', (req, res) => {
-    let drawingCanvas = req.body.signature; //works
-    let userID = req.session.signed;
-    console.log(userID);
+    let drawingCanvas = req.body.signature; //works!! (base64 string)
+    let userID = req.session.signedIn;
     if(drawingCanvas){
         insertDataIntoSignatureDB(drawingCanvas, userID)
             .then((data)=>{
-                console.log('got here');
-                showError = false, 
-                req.session.signed = data.rows[0].id;
+                // console.log('got here', data);
+                showError = false,
+                console.log('data.rows[0].id before signature;', data.rows[0].id);
+                req.session.signedWithSignature = data.rows[0].id;
                 res.redirect('/thanks');
-            })
+            })//user ID not the signedIn property
             .catch((err) => {
                 console.log(err);
             });
@@ -314,6 +325,10 @@ app.post('/signature', (req, res) => {
 
 });
 //signature above
+
+
+//req.session = null; a form? 
+// app.post()
 
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);

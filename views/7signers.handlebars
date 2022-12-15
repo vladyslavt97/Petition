@@ -4,12 +4,12 @@ insert link in handlebars file for the city if the person has provided a city --
     {{#each allDataRows}}
     <li>
         {{#if linkProvided}}
-        <a href="{{homepage}}" target="_blank">{{ first}} {{last}}</a> {{age}}
+        <a href="{{homepage}}" target="_blank"> {{ first}} {{last}}</a> {{age}}
         {{else}}
         {{ first}} {{last}} {{age}}
         {{/if}}
 
-        {{#if cityProvided}}
+        {{#if cityProvided}} {{! -- query to check if user_profiles table consists of the city value for this current user_id--}}
         <a href="/{{url}}">{{city}}</a> 
         {{else}}
         {{city}}

@@ -42,8 +42,12 @@ module.exports.insertDataIntoUserProfilesDB = (ageValueSaved, cityValueSaved, ho
     return db.query(`INSERT INTO user_profiles (city, age, homepage, user_id) VALUES ($1, $2, $3, $4) RETURNING id;`,[cityValueSaved, ageValueSaved, homepageValueSaved, userID]);
 };
 //join
-module.exports.selectJoinUsersAndUserProfilesDBs = () => { 
-    return db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id;`);
+module.exports.selectJoinUsersAndUserProfilesDBs = () => {
+    return new Promise((resolve, reject) => {
+        const allData = db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id;`);
+        resolve(allData);
+        reject('Error: Could not fetch data from the API');
+    });
     //  with FULL OUTER JOIN to get the data from users and user_profiles table
 };
 
