@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -58,7 +58,7 @@ app.use((req, res, next) => {
 
 //need to save user_id property somewhere === userProfileID (for age, city homepage, if entered)
 app.use((req, res, next) => {
-    console.log('req.session.userProfileID', req.session.userProfileID);
+    // console.log('req.session.userProfileID', req.session.userProfileID);
     if (req.url.startsWith("/user-profile") && req.session.userProfileID) {
         res.redirect("/thanks");
     } else {
@@ -66,7 +66,7 @@ app.use((req, res, next) => {
 });
 // signedWithSignature or not
 app.use((req, res, next) => {
-    console.log('req.session.signedWithSignature', req.session.signedWithSignature);
+    // console.log('req.session.signedWithSignature', req.session.signedWithSignature);
     if (req.url.startsWith("/signature") && req.session.signedWithSignature) {
         res.redirect("/thanks");
     } else {
@@ -134,7 +134,7 @@ app.get("/thanks", (req, res) => { //works!!!
                 // console.log('el.id: ', el.id); //el.id = 2,3,11, 12,....
                 return el.id === req.session.signedWithSignature;
             });
-            console.log('infoOfUser', infoOfUser);// undefined WHY???
+            // console.log('infoOfUser', infoOfUser);
             final = infoOfUser.signature;
             res.render("6thanks", {
                 layout: "main",
@@ -153,10 +153,7 @@ app.get("/thanks", (req, res) => { //works!!!
 app.get("/signers", (req, res) => {//first, last (users table);  //age city homepage (user_profiles table)
     selectJoinUsersAndUserProfilesDBs()//we get everything from here: first, last (users table);//age city homepage (user_profiles table)
         .then(allData => {
-            // console.log('allData from merged tables: ', allData);//+
-            
             allDataRows = allData.rows;
-            console.log('allDataRows: ', allDataRows);
             res.render("7signers", {
                 layout: "main",
                 numberofItems,
@@ -171,33 +168,31 @@ app.get("/signers", (req, res) => {//first, last (users table);  //age city home
 });
 //
 // :city is a placeholder and will be put in req.params object
-// app.get('/signers/:city', (req, res) => {
-//     const projectDirectory = req.params.projectDirectory; // 'kitty-caroussel';
-//     const selectedCity = projects.find(p => {
-//         return p.url === projectDirectory;
-//     });
-    
-//     if (selectedCity === undefined){// TASK: check if selectedProject is undefined.
-//         res.status(404).send("Wrong request"); //      if it is undefined. set statuscode 404 and send response.
-//     }
-
-//     res.render('8signerscities', {
-//         layout: "main",
-//         projects: projects,
-//         showImage: false,
-//         selectedCity: selectedCity,
-//         helpers: {
-//             getStylesHelper: "/stylesforprojects.css",
-//             getActiveClass: (url) => {
-//                 if(selectedProject.url === url){
-//                     return 'active';
-//                 }  
-//             }
-//         }
-//     });
-// });
-
+let signerscitiesRows;
+app.get('/signers/:city', (req, res) => {
+    console.log('params: ', req.params.city); //Berlin
+    const cityFromSignersPage = req.params.city;
+    selectSignersFromSpecificCities(cityFromSignersPage)
+        .then(allDataBasedOnCity => {
+            signerscitiesRows = allDataBasedOnCity.rows;
+            console.log('everything: ',signerscitiesRows);
+            res.render("8signerscities", {
+                layout: "main",
+                numberofItems,
+                cohortName,
+                createdBy,
+                signerscitiesRows,
+                cityFromSignersPage
+            });
+        })
+        .catch(err => {
+            console.log('error appeared for query: ', err);
+        });
+});
 //get routes are above
+
+
+
 
 //                                          POST
 //registration post
@@ -283,7 +278,7 @@ app.post('/signin', (req, res) => {
 });
 //signin above
 //user-profile
-app.post('/user-profile', (req, res) => {
+app.post('/user-profile', (req, res) => { //nop need for a cookie, because it has to be eddited
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;

@@ -1,8 +1,7 @@
-{{#selectedProject}}
-<p class="details">Project details:&#20;<b><em>{{name}}</em></b></p>
-<div class="right-side">
-    <img src="/{{url}}/screenshot.png" />
-    <p>{{description}}</p>
-    <a href="/{{url}}">Launch</a>
-</div>
-{{/selectedProject}}
+
+<p class="details-signerscities-page"> All people from {{cityFromSignersPage}}:</p>
+{{#each signerscitiesRows}}
+
+<li id="rows-signerscities-page">{{this.first}} {{this.last}} <b id="age-on-signerscities-page">{{this.age}}</b></li>
+
+{{/each}}

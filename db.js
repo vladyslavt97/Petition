@@ -44,13 +44,25 @@ module.exports.insertDataIntoUserProfilesDB = (ageValueSaved, cityValueSaved, ho
 //join
 module.exports.selectJoinUsersAndUserProfilesDBs = () => {
     return new Promise((resolve, reject) => {
-        const allData = db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id;`);
+        const allData = db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id ORDER BY users.created_at;`);
         resolve(allData);
         reject('Error: Could not fetch data from the API');
     });
     //  with FULL OUTER JOIN to get the data from users and user_profiles table
 };
 
-module.exports.selectSignersFromSpecificCities = (cityNextToAge) => { //you will need a new function in your db.js where you want to get signers from a specific city
-    return db.query(`SELECT * FROM user_profiles WHERE city = $1;`, [cityNextToAge]); //not cityValueSaved!!! but the value which we are clicking on next to the age
+module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => { //you will need a new function in your db.js where you want to get signers from a specific city
+    return new Promise((resolve, reject) => {
+        const allDataBasedOnCity = db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id WHERE city = $1;`, [cityFromSignersPage]); //+first last from user
+        resolve(allDataBasedOnCity);
+        reject('Error: Could not fetch data from the API'); //not cityValueSaved!!! but the value which we are clicking on next to the age
+    });
 };
+
+// module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => { //you will need a new function in your db.js where you want to get signers from a specific city
+//     return new Promise((resolve, reject) => {
+//         const allDataBasedOnCity = db.query(`SELECT * FROM user_profiles WHERE city = $1;`, [cityFromSignersPage]); //+first last from user
+//         resolve(allDataBasedOnCity);
+//         reject('Error: Could not fetch data from the API'); //not cityValueSaved!!! but the value which we are clicking on next to the age
+//     });
+// };

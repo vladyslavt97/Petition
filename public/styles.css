@@ -75,12 +75,32 @@ form {
     color: white;
 }
 
-li{
+#lines-signers-page{
     color: white;
+    list-style-type: none;
+}
+
+#links-signers-page{
+    color: rgb(103, 227, 255);
+    font-style: italic;
+}
+
+#cities-signers-page{
+    color: rgb(103, 227, 255);
+    font-style: italic;
 }
 
 #not-mandatory-answers-text{
     color: white;
+}
+
+#rows-signerscities-page{
+    color: white;
+    list-style-type: none;
+}
+
+#age-on-signerscities-page{
+    color:#ffa322;
 }
 
 em{

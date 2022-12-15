@@ -2,15 +2,15 @@
 insert link in handlebars file for the city if the person has provided a city --}}
 <ol>
     {{#each allDataRows}}
-    <li>
-        {{#if linkProvided}}
-        <a href="{{homepage}}" target="_blank"> {{ first}} {{last}}</a> {{age}}
+    <li id="lines-signers-page">
+        {{#if homepage}}
+        <a href="{{homepage}}" target="_blank" id="links-signers-page"> {{ first}} {{last}}</a> {{age}}
         {{else}}
         {{ first}} {{last}} {{age}}
         {{/if}}
 
-        {{#if cityProvided}} {{! -- query to check if user_profiles table consists of the city value for this current user_id--}}
-        <a href="/{{url}}">{{city}}</a> 
+        {{#if city}} {{! -- query to check if user_profiles table consists of the city value for this current user_id--}}
+        <a href="/signers/{{city}}" id="cities-signers-page">{{city}}</a> 
         {{else}}
         {{city}}
         {{/if}}
