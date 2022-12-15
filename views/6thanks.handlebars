@@ -1,6 +1,9 @@
 <h1>Thank you for signing the petition!</h1>
-<a href="/signers" id="number-thanks-page">The number of signers is {{ numberofItems }}</a>
-{{!--set to the data url you passed to the template - this will render the img onscreen! --}}
+<a href="/logout" id="signOutBtn">Sign Out</a>
 <img id="yoursignature" src="{{final}}" alt="your-signature">
+<br>
+<br>
 
-<p></p>
+<a href="/signers" id="number-thanks-page">All {{ numberofItems }} signers can be viewed here</a>
+<a href="/redraw" id="delete-thanks-page">Delete your signature</a>
+<a href="/edit" id="edit-thanks-page">Edit your profile</a>

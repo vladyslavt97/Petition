@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -129,6 +129,7 @@ let final;
 app.get("/thanks", (req, res) => { //works!!!
     selectAllDataFromSignaturesDB()
         .then(allData => {
+            console.log();
             numberofItems = allData.rows.length;
             infoOfUser = allData.rows.find(el => {//infoOfUSer = id:16, signature: data.., user_id: 16; created_at;
                 // console.log('el.id: ', el.id); //el.id = 2,3,11, 12,....
@@ -170,12 +171,10 @@ app.get("/signers", (req, res) => {//first, last (users table);  //age city home
 // :city is a placeholder and will be put in req.params object
 let signerscitiesRows;
 app.get('/signers/:city', (req, res) => {
-    console.log('params: ', req.params.city); //Berlin
     const cityFromSignersPage = req.params.city;
     selectSignersFromSpecificCities(cityFromSignersPage)
         .then(allDataBasedOnCity => {
             signerscitiesRows = allDataBasedOnCity.rows;
-            console.log('everything: ',signerscitiesRows);
             res.render("8signerscities", {
                 layout: "main",
                 numberofItems,
@@ -188,6 +187,24 @@ app.get('/signers/:city', (req, res) => {
         .catch(err => {
             console.log('error appeared for query: ', err);
         });
+});
+//signout
+app.get('/logout', (req, res) => {
+    req.session = null;
+    res.redirect('/petition');
+});
+//signout
+app.get('/redraw', (req, res) => {
+    req.session.signedWithSignature = null;
+    res.redirect('/signature');
+});
+//edit
+app.get("/edit", (req, res) => { // 1 validation
+    res.render("9edit", {
+        layout: "main",
+        cohortName,
+        createdBy,
+    });
 });
 //get routes are above
 
@@ -239,42 +256,66 @@ app.post('/register', (req, res) => {
 });
 //registration above
 //signin post
+
+let incorrectData = false;
+let matchForUserIDs;
 app.post('/signin', (req, res) => {
-    let emailValueSaved = req.body.emailValue;
-    let passwordValueSaved = req.body.passwordValue;
-    //first check if the user exists in your database
-    //if he/she exists then compare if the password matches
-    selectAllDataFromUsersDB()
-        .then((allData) => {
-            //check email as well
-            let pwdOfUSer = allData.rows[0].password;
-            // let pwdOfUSer = allData.rows[password];
-            compare(passwordValueSaved, pwdOfUSer).then((boolean)=>{
-                // console.log(`match: ${boolean}`);
-                if(boolean === true){
-                    if(emailValueSaved !== '' && passwordValueSaved !== ''){
-                        insertDataIntoUsersDB(emailValueSaved, passwordValueSaved)
-                            .then((data)=>{
-                                showError = false, 
-                                req.session.signedIn = data.rows[0].id;
-                                res.redirect('/thanks'); //go to the signature table to see if this use already signedIn
-                                //if the user has already signedIn, redirect to Thanks Page (done in middleware)
-                                //otherwise redirect to signature page (done above)
-                            })
-                            .catch((err) => {
-                                console.log(err);
+    let emailValueSavedS = req.body.emailValueS;
+    let passwordValueSavedS = req.body.passwordValueS;
+    if(emailValueSavedS !== '' && passwordValueSavedS !== ''){
+        selectJoinUsersAndSignaturesDBs()
+            .then((allData) => {
+                matchForUserIDs = allData.rows.find(el => {
+                    return el.email === emailValueSavedS;
+                });
+                final = matchForUserIDs.email;
+                if (matchForUserIDs){
+                    let pwdOfUSer = allData.rows[0].password;
+                    compare(passwordValueSavedS, pwdOfUSer).then((boolean)=>{
+                        // console.log(`match: ${boolean}`);
+                        if(boolean === true){
+                            //thanks page does not know what is the signature because we saved it in different cookies
+                            //another query?..
+                            // selectJoinUsersAndUserProfilesDBs() //find signature which matches with the id of the user from users
+                            //     .then((allData) => {
+                            //         matchForUserIDs = allData.rows.find(el => {
+                            //             return el.id === emailValueSavedS;
+                            //         });
+                            req.session.signedIn = allData.rows[0].id;
+                            req.session.signedWithSignature = allData.rows[0].id;//save the cookie
+                            res.redirect('/thanks');
+                            // })
+                            // .catch(err => {
+                            //     console.log('ERROR with signature', err);
+                            // });
+                        }else{
+                            res.render("3signin", {
+                                layout: "main",
+                                cohortName,
+                                createdBy,
+                                incorrectData: true
                             });
-                    } else {
-                        res.render("3signin", {
-                            layout: "main",
-                            cohortName,
-                            createdBy,
-                            showError: true
-                        });
-                    }
+                        }
+                    });
+                }else {
+                    console.log('why is it wrong');
+                    res.render("3signin", {
+                        layout: "main",
+                        cohortName,
+                        createdBy,
+                        incorrectData: true
+                    });
                 }
             });
+    } else {
+        console.log('first time if else');
+        res.render("3signin", {
+            layout: "main",
+            cohortName,
+            createdBy,
+            showError: true //not all fields are filled
         });
+    }
 });
 //signin above
 //user-profile

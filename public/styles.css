@@ -103,6 +103,22 @@ form {
     color:#ffa322;
 }
 
+#delete-thanks-page{
+    color: rgb(118, 140, 158);
+    font-style: italic;
+}
+#edit-thanks-page{
+    color: rgb(118, 140, 158);
+    font-style: italic;
+}
+
+#signOutBtn{
+    position: absolute;
+    color: white;
+    left: 40px;
+    top: 10px;
+}
+
 em{
     letter-spacing: 2px;
 }

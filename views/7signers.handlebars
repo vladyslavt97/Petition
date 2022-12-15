@@ -1,5 +1,4 @@
-{{!-- insert link in handlebars file for the name if the person has a homepage
-insert link in handlebars file for the city if the person has provided a city --}}
+<a href="/logout" id="signOutBtn">Sign Out</a>
 <ol>
     {{#each allDataRows}}
     <li id="lines-signers-page">
@@ -9,7 +8,7 @@ insert link in handlebars file for the city if the person has provided a city --
         {{ first}} {{last}} {{age}}
         {{/if}}
 
-        {{#if city}} {{! -- query to check if user_profiles table consists of the city value for this current user_id--}}
+        {{#if city}}
         <a href="/signers/{{city}}" id="cities-signers-page">{{city}}</a> 
         {{else}}
         {{city}}

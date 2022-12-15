@@ -2,9 +2,12 @@
     {{#if showError}}
     <p id="error">FILL THE DATA!</p>
     {{/if}}
+    {{#if incorrectData}}
+    <p id="error">Something went wrong... Try again</p>
+    {{/if}}
 <form action="/signin" method="POST" id="form-signin-page">
-    <input type="text" name="emailValue" placeholder="Email" >
-    <input type="text" name="passwordValue" placeholder="Passpord">
+    <input type="text" name="emailValueS" placeholder="Email" >
+    <input type="password" name="passwordValueS" placeholder="Passpord">
     <button type="submit" href="/thanks"> <b> Sign In</b></button>
 </form>
 
