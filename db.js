@@ -43,7 +43,12 @@ module.exports.insertDataIntoUserProfilesDB = (ageValueSaved, cityValueSaved, ho
 };
 //join users and user_profiles 
 module.exports.selectJoinUsersAndUserProfilesDBs = () => {
-    return db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id ORDER BY users.created_at;`);
+    return db.query(`SELECT * FROM users 
+                    INNER JOIN signatures
+                 ON users.id = signatures.user_id 
+                    FULL OUTER JOIN user_profiles 
+                    ON users.id = user_profiles.user_id 
+                    ORDER BY users.created_at;`);
     //module.exports.getAllSigned = () => {
 //     return db.query(`
 //         SELECT * FROM users
@@ -57,7 +62,7 @@ module.exports.selectJoinUsersAndUserProfilesDBs = () => {
 //join users and user_profiles (for pw and email check?)
 module.exports.selectJoinUsersAndSignaturesDBs = () => {
     return new Promise((resolve, reject) => {
-        const allData = db.query(`SELECT * FROM users FULL OUTER JOIN signatures ON users.id = signatures.user_id;`);//pwd user id , signature email
+        const allData = db.query(`SELECT users.password, users.id, users.email, signatures.signature FROM users FULL OUTER JOIN signatures ON users.id = signatures.user_id;`);//pwd user id , signature email
         resolve(allData);
         reject('Error: Could not fetch data from the API');
     });

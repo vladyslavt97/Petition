@@ -48,8 +48,8 @@ app.use((req, res, next) => {
         //     res.redirect("/thanks");
     // } else if (req.url.startsWith("/signature") && !req.session.signedWithSignature) {
     //     res.redirect("/petition");
-    } else if (req.url.startsWith("/signature") && !req.session.signedIn) {
-        res.redirect("/register");
+    // } else if (req.url.startsWith("/signature") && !req.session.signedIn) {
+    //     res.redirect("/register");
     } else if (req.url.startsWith("/thanks") && !req.session.signedIn) {
         res.redirect("/petition"); 
     } else if (req.url.startsWith("/signers") && !req.session.signedIn) {
@@ -132,13 +132,10 @@ let final;
 app.get("/thanks", (req, res) => { //works!!!
     selectAllDataFromSignaturesDB()
         .then(allData => {
-            console.log();
             numberofItems = allData.rows.length;
-            // console.log('allData.rows: ', allData.rows);
-            infoOfUser = allData.rows.find(el => {//5
-                return el.id === req.session.signedWithSignature;
+            infoOfUser = allData.rows.find(el => {
+                return el.user_id === req.session.signedIn;
             });
-            // console.log('infoOfUser', infoOfUser);
             final = infoOfUser.signature;
             res.render("6thanks", {
                 layout: "main",
@@ -292,7 +289,7 @@ app.post('/signin', (req, res) => {
                     compare(passwordValueSavedS, pwdOfUSer).then((boolean)=>{
                         console.log(`match: ${boolean}`);
                         if(boolean === true){
-                            req.session.signedIn = matchForUserIDs.user_id;
+                            req.session.signedIn = matchForUserIDs.id;
                             console.log('qqqqqqqqq: ', allData);
                             // matchForUserSignature = allData.rows.find(el => {
                             //     console.log('element: ', el);
@@ -356,6 +353,7 @@ app.post('/user-profile', (req, res) => { //nop need for a cookie, because it ha
 app.post('/signature', (req, res) => { ///should have an update in DB because the signature already exists!!
     //how to check if an insert or update query should run!
     let drawingCanvas = req.body.signature;
+    console.log('req.session: ', req.session);
     let userID = req.session.signedIn;
     if(drawingCanvas){
         insertDataIntoSignatureDB(drawingCanvas, userID)
