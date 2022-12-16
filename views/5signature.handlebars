@@ -1,7 +1,8 @@
 <script defer src="canvas.js"></script>
+<a href="/logout" id="signOutBtn">Sign Out</a>
 <h3><em>Please, sign here:</em></h3><br>
 {{#if showError}}
-<p id="error">FILL SIGN!</p>
+<p id="error">Sign the petition, please!</p>
 {{/if}}
 <form action="/signature" method="POST" id="form-signature-page">
     <canvas id="drawing" width="400" height="200" ></canvas>

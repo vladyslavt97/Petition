@@ -26,6 +26,10 @@ canvas.addEventListener("mousemove", function (e) {
 });
 canvas.addEventListener("mouseup", function () {
     isDrawing = false;
+    let dataURL = canvas.toDataURL();
+    const hiddenValue = document.getElementById("hidden").value = dataURL;
+    console.log(hiddenValue);
+// });
 });
 canvas.addEventListener("mouseleave", function () {
     isDrawing = false;
@@ -33,9 +37,10 @@ canvas.addEventListener("mouseleave", function () {
 
 
 //my setup for encoding
-const btn = document.querySelector('button');
-btn.addEventListener("click", function () {
-    let dataURL = canvas.toDataURL();
-    const hiddenValue = document.getElementById("hidden").value = dataURL;
-    console.log(hiddenValue);
-});
+
+// const btn = document.querySelector('button');
+// btn.addEventListener("click", function () {
+//     let dataURL = canvas.toDataURL();
+//     const hiddenValue = document.getElementById("hidden").value = dataURL;
+//     console.log(hiddenValue);
+// });

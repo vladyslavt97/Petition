@@ -40,14 +40,16 @@ app.use((req, res, next) => {
         res.redirect("/thanks");
     } else if (req.url.startsWith("/register") && req.session.signedIn) {
         res.redirect("/thanks");
-    } else if (req.url.startsWith("/signin") && req.session.signedIn) {
+    } else if (req.url.startsWith("/signin") && req.session.signedIn) {//signedWithSignature
         res.redirect("/thanks");
     // } else if (req.url.startsWith("/user-profile") && req.session.signedIn) {
     //     res.redirect("/thanks");
         // } else if (req.url.startsWith("/signature") && req.session.sigsignedInned) {
         //     res.redirect("/thanks");
+    // } else if (req.url.startsWith("/signature") && !req.session.signedWithSignature) {
+    //     res.redirect("/petition");
     } else if (req.url.startsWith("/signature") && !req.session.signedIn) {
-        res.redirect("/petition");
+        res.redirect("/register");
     } else if (req.url.startsWith("/thanks") && !req.session.signedIn) {
         res.redirect("/petition"); 
     } else if (req.url.startsWith("/signers") && !req.session.signedIn) {
@@ -66,10 +68,12 @@ app.use((req, res, next) => {
 });
 // signedWithSignature or not
 app.use((req, res, next) => {
+    console.log('req.session: ', req.session);
     if (req.url.startsWith("/signature") && req.session.signedWithSignature) {
         res.redirect("/thanks");
     } else {
-        next();    }
+        next();    
+    }
 });
 //                                                       middleware ends here                                            
 
@@ -134,7 +138,7 @@ app.get("/thanks", (req, res) => { //works!!!
             infoOfUser = allData.rows.find(el => {//5
                 return el.id === req.session.signedWithSignature;
             });
-            console.log('infoOfUser', infoOfUser);
+            // console.log('infoOfUser', infoOfUser);
             final = infoOfUser.signature;
             res.render("6thanks", {
                 layout: "main",
@@ -146,7 +150,7 @@ app.get("/thanks", (req, res) => { //works!!!
             
         })
         .catch(err => {
-            console.log('error appeared for query to get data from signatures table: ', err);
+            console.log('error appeared for query to get data from signatures table on the thanks get: ', err);
         });
 });///works!!!
 
@@ -192,15 +196,16 @@ app.get('/logout', (req, res) => {
     req.session = null;
     res.redirect('/petition');
 });
-//signout
+//redraw
 let userID;
 app.get('/redraw', (req, res) => {
-    //delete db query
     userID = req.session.signedIn;
+    console.log('userID: ', userID);
     deleteSignatureFromSignaturesDB(userID)
         .then(() => {
-
+            console.log('deleted /redraw', req.session);
             req.session.signedWithSignature = null;
+            console.log('deleted cookie /redraw', req.session);
             res.redirect('/signature');
         })
         .catch((err) =>{
@@ -268,28 +273,39 @@ app.post('/register', (req, res) => {
 
 let incorrectData = false;
 let matchForUserIDs;
+let matchForUserSignature;
 app.post('/signin', (req, res) => {
     let emailValueSavedS = req.body.emailValueS;
     let passwordValueSavedS = req.body.passwordValueS;
     if(emailValueSavedS !== '' && passwordValueSavedS !== ''){
         selectJoinUsersAndSignaturesDBs()
             .then((allData) => {
-                console.log('all!!!', allData);
+                // console.log('allData.rows: ', allData.rows);
                 matchForUserIDs = allData.rows.find(el => {
                     return el.email === emailValueSavedS;
                 });
                 console.log('matchForUserIDs', matchForUserIDs);
-                final = matchForUserIDs.email;
+                // final = matchForUserIDs.email;
                 if (matchForUserIDs){
                     let pwdOfUSer = matchForUserIDs.password;
-                    console.log('log before the compare', matchForUserIDs, '2: ', passwordValueSavedS);
+                    // console.log('log before the compare', matchForUserIDs, '2: ', passwordValueSavedS);
                     compare(passwordValueSavedS, pwdOfUSer).then((boolean)=>{
                         console.log(`match: ${boolean}`);
                         if(boolean === true){
-                            req.session.signedIn = matchForUserIDs.id;
-                            req.session.signedWithSignature = matchForUserIDs.id;
-                            console.log('cooooooookies: ', req.session);
-                            res.redirect('/thanks');
+                            req.session.signedIn = matchForUserIDs.user_id;
+                            console.log('qqqqqqqqq: ', allData);
+                            // matchForUserSignature = allData.rows.find(el => {
+                            //     console.log('element: ', el);
+                            //     return el.signature === matchForUserIDs;
+                            // });
+                            // console.log('matchForUserSignature: ', matchForUserSignature);
+                            if(matchForUserIDs.signature){//it exsist - redirect to thanks
+                                req.session.signedWithSignature = matchForUserIDs.id;
+                                res.redirect('/thanks');
+                                console.log('cooooooookies: ', req.session);
+                            }else{//redirect to signature
+                                res.redirect('/signature');
+                            }
                         }else{
                             res.render("3signin", {
                                 layout: "main",
@@ -339,7 +355,7 @@ app.post('/user-profile', (req, res) => { //nop need for a cookie, because it ha
 //signature post
 app.post('/signature', (req, res) => { ///should have an update in DB because the signature already exists!!
     //how to check if an insert or update query should run!
-    let drawingCanvas = req.body.signature; 
+    let drawingCanvas = req.body.signature;
     let userID = req.session.signedIn;
     if(drawingCanvas){
         insertDataIntoSignatureDB(drawingCanvas, userID)
@@ -353,7 +369,7 @@ app.post('/signature', (req, res) => { ///should have an update in DB because th
                 console.log(err);
             });
     } else {
-        res.render("4signature", {
+        res.render("5signature", {
             layout: "main",
             cohortName,
             createdBy,
@@ -365,11 +381,6 @@ app.post('/signature', (req, res) => { ///should have an update in DB because th
 //signature above
 
 
-//req.session = null; a form? 
-// app.post()
-
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);
-} );
-
-
+});
