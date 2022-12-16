@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -170,7 +170,7 @@ app.get("/signers", (req, res) => {//first, last (users table);  //age city home
 //
 // :city is a placeholder and will be put in req.params object
 let signerscitiesRows;
-app.get('/signers/:city', (req, res) => {
+app.get('/signers/:city', (req, res) => {console.log('params', req.params);
     const cityFromSignersPage = req.params.city;
     selectSignersFromSpecificCities(cityFromSignersPage)
         .then(allDataBasedOnCity => {
@@ -197,12 +197,11 @@ app.get('/logout', (req, res) => {
 let userID;
 app.get('/redraw', (req, res) => {
     userID = req.session.signedIn;
-    console.log('userID: ', userID);
     deleteSignatureFromSignaturesDB(userID)
         .then(() => {
-            console.log('deleted /redraw', req.session);
+            // console.log('deleted /redraw', req.session);
             req.session.signedWithSignature = null;
-            console.log('deleted cookie /redraw', req.session);
+            // console.log('deleted cookie /redraw', req.session);
             res.redirect('/signature');
         })
         .catch((err) =>{
@@ -210,12 +209,34 @@ app.get('/redraw', (req, res) => {
         });
 });
 //edit
-app.get("/edit", (req, res) => { // 1 validation
-    res.render("9edit", {
-        layout: "main",
-        cohortName,
-        createdBy,
-    });
+let userIDEdit;
+app.get("/edit", (req, res) => { //we need: first, last, pw, email, age, city, homepage
+    userIDEdit = req.session.signedIn;
+    // console.log('userID: ', userIDEdit);//user_profiles = user_id; //users = id
+    selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
+        .then((data) => {
+            console.log('data.rows: ', data);
+            let everything = data.rows;
+            infoOfUser = everything.find(el => {
+                return el.user_id === req.session.signedIn;
+            });
+            console.log('infoOfUser', infoOfUser);
+            // let fn = everything.first;
+            // let ln = everything.last;
+            // let em = everything.email;
+            // let ag = everything.age;
+            // let hp = everything.homepage;
+            // let ct = everything.city;
+            res.render("9edit", {
+                layout: "main",
+                cohortName,
+                createdBy,
+                // everything: {first: 'Vlad', last, email, age, homepage, city}
+            });
+        })
+        .then(err => {
+            console.log('errorr!!!!!RRR!!!:', err);
+        });
 });
 //get routes are above
 
@@ -377,8 +398,34 @@ app.post('/signature', (req, res) => { ///should have an update in DB because th
 
 });
 //signature above
+//edit
+app.post('/edit', (req, res) => {
+    //how to check if an insert or update query should run!
+    let drawingCanvas = req.body.signature;
+    console.log('req.session: ', req.session);
+    let userID = req.session.signedIn;
+    if(drawingCanvas){
+        insertDataIntoSignatureDB(drawingCanvas, userID)
+            .then((data)=>{
+                // console.log('got here', data);
+                showError = false,
+                req.session.signedWithSignature = data.rows[0].id;
+                res.redirect('/thanks');
+            })//user ID not the signedIn property
+            .catch((err) => {
+                console.log(err);
+            });
+    } else {
+        res.render("5signature", {
+            layout: "main",
+            cohortName,
+            createdBy,
+            showError: true
+        });
+    }
 
-
+});
+//end of edit
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);
 });

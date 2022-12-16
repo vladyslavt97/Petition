@@ -3,13 +3,16 @@
 {{#if showError}}
 <p id="error">FILL THE DATA!</p>
 {{/if}}
+{{!-- fn, ln, em, ag, hp, ct, pw --}}
 <form action="/edit" method="POST" id="form-user-profile-page">
-    <input type="text" name="firstNameValues" placeholder="First Name">
+    {{!-- {{#everything}} --}}
+    <input type="text" name="firstNameValues" placeholder="First Name" value="{{everything.first}}">
     <input type="text" name="secondNameValues" placeholder="Second Name">
     <input type="text" name="emailValue" placeholder="Email">
     <input type="password" name="passwordValue" placeholder="Password" id="password">
     <input type="text" name="ageValue" placeholder="Age">
     <input type="text" name="cityValue" placeholder="City">
     <input type="text" name="homepageValue" placeholder="Your website">
-    <button type="submit" href="/signers"><b> Submit</b></button>
+    <button type="submit" href="/thanks"><b> Submit</b></button>
+    {{!-- {{/everything}} --}}
 </form>

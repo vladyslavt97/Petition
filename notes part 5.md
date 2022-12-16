@@ -5,9 +5,9 @@
 -   add additional function to your db.js for updating/inserting data
     //////////////////////////////////////////////////
 
-## Create edit handlebars and GET and POST route in your express app
+<!-- ## Create edit handlebars and GET and POST route in your express app
 
--   create handlebars file which will have multiple input fields wrapped in a form
+-   create handlebars file which will have multiple input fields wrapped in a form -->
     -   form will make POST request when form was submitted by clicking on the button
     -   your input fields will have predefined values when there are existing values (make sure you pass them in the GET route when you render the handlebars accordingly)
 -   in the GET route you should probably first get all relevant values from the db
