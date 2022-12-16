@@ -53,11 +53,12 @@ module.exports.selectJoinUsersAndUserProfilesDBs = () => {
 //join users and user_profiles
 module.exports.selectJoinUsersAndSignaturesDBs = () => {
     return new Promise((resolve, reject) => {
-        const allData = db.query(`SELECT * FROM users FULL OUTER JOIN signatures ON users.id = signatures.user_id;`);
+        const allData = db.query(`SELECT users.password, users.id, users.email FROM users FULL OUTER JOIN signatures ON users.id = signatures.user_id;`);
         resolve(allData);
         reject('Error: Could not fetch data from the API');
     });
     //  with FULL OUTER JOIN to get the data from users and user_profiles table
+    //SELECT users.password, users.id, users.email, signatures.id FROM users FULL OUTER JOIN signatures ON users.id = signatures.user_id;
 };
 
 module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => { //you will need a new function in your db.js where you want to get signers from a specific city
@@ -68,10 +69,19 @@ module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => { //yo
     });
 };
 
-// module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => { //you will need a new function in your db.js where you want to get signers from a specific city
+module.exports.deleteSignatureFromSignaturesDB = (userID) => { 
+    return db.query(`DELETE FROM signatures WHERE user_id = $1;`, [userID]); //where user_id of signatures === id in users
+
+};
+//DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
+// DELETE FROM signatures
+// WHERE user_id IN (SELECT id FROM users WHERE signatures === id)
+
+
+// module.exports.selectAllDataFromSignaturesDB = () =>{
 //     return new Promise((resolve, reject) => {
-//         const allDataBasedOnCity = db.query(`SELECT * FROM user_profiles WHERE city = $1;`, [cityFromSignersPage]); //+first last from user
-//         resolve(allDataBasedOnCity);
-//         reject('Error: Could not fetch data from the API'); //not cityValueSaved!!! but the value which we are clicking on next to the age
+//         const allData = db.query(`SELECT * FROM signatures;`);
+//         resolve(allData);
+//         reject('Error: Could not fetch data from the API');
 //     });
 // };
