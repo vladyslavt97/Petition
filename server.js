@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updateJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updateJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable, updateUserProfilesDBForEdit, updateUsersDBForEdit } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -22,6 +22,7 @@ const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
 const cookieSession = require("cookie-session");
+const e = require("express");
 const {SESSION_SECRET} = process.env;
 app.use(
     cookieSession({
@@ -300,7 +301,7 @@ app.post('/signin', (req, res) => {
                 matchForUserIDs = allData.rows.find(el => {
                     return el.email === emailValueSavedS;
                 });
-                console.log('matchForUserIDs', matchForUserIDs);
+                // console.log('matchForUserIDs', matchForUserIDs);
                 // final = matchForUserIDs.email;
                 if (matchForUserIDs){
                     let pwdOfUSer = matchForUserIDs.password;
@@ -310,7 +311,7 @@ app.post('/signin', (req, res) => {
                             console.log(`match: ${boolean}`);
                             if(boolean === true){
                                 req.session.signedIn = matchForUserIDs.id;
-                                console.log('qqqqqqqqq: ', allData);
+                                // console.log('qqqqqqqqq: ', allData);
                                 if(matchForUserIDs.signature){//it exsist - redirect to thanks
                                     req.session.signedWithSignature = matchForUserIDs.id;
                                     res.redirect('/thanks');
@@ -390,9 +391,9 @@ app.post('/signature', (req, res) => {
 
 });
 //signature above
+
 //edit
-app.post('/edit', (req, res) => { //account for mandatory fields and non mandatory (age, city, homepage) (impossible to have to signature at this point)
-    //for given user (session.signedIn) - running a check for a match of theUserToEdit from selectJoinUsersAndUserProfilesDBsForEdit with the current values
+app.post('/edit', (req, res) => {
     const currentValueOfData = req.body;
     userIDEdit = req.session.signedIn;
     selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
@@ -401,68 +402,71 @@ app.post('/edit', (req, res) => { //account for mandatory fields and non mandato
             theUserToEdit = everything.find(el => {
                 return el.user_id === req.session.signedIn;
             });
-            console.log('current value of input: ', currentValueOfData.firstNameValues);
-            console.log('current value of user found by 46 (user_id): ', theUserToEdit.first);
-            if (currentValueOfData.firstNameValues === theUserToEdit.first && 
-                currentValueOfData.secondNameValues === theUserToEdit.last &&
-                currentValueOfData.emailValue === theUserToEdit.email &&
-                // currentValueOfData.passwordValue === theUserToEdit.password && //check with compare*
-                currentValueOfData.ageValue === theUserToEdit.age &&
-                currentValueOfData.cityValue === theUserToEdit.city &&
-                currentValueOfData.homepageValue === theUserToEdit.homepage){
-                console.log('match! Now password check!');
-                //pwd check with compare
-                const passwordValueEdit = currentValueOfData.passwordValue;
-                const findPwd = theUserToEdit.password;
-                //pwd value from handlebar //redult of find.password
-                compare(passwordValueEdit, findPwd)
-                    .then((boolean)=>{
-                        console.log(`match: ${boolean}`);
-                        if(boolean === true){//match for password
-                            console.log('Now passwords match also!');
-                            res.redirect('/thanks');
+            const passwordValueEdit = currentValueOfData.passwordValue;
+            const findPwd = theUserToEdit.password;
+            // let reenterPwd = false;
+            compare(passwordValueEdit, findPwd)
+                .then((boolean)=>{
+                    // console.log(`match: ${boolean}`);
+                    if(boolean === true){//match for password
+                        // console.log('Now passwords match also!');
+                        // res.redirect('/thanks');
+                    } else {
+                        // console.log('boolean is not true?: ', boolean);
+                        if (currentValueOfData.passwordValue === ''){ //what if password filed is empty???
+                            res.render("9edit", {
+                                layout: "main",
+                                cohortName,
+                                createdBy,
+                                showError: true
+                                // reenterPwd: true
+                            });
                         } else {
-                            console.log('boolean is not true?: ', boolean);
-                            if (currentValueOfData.passwordValue === ''){ //what if password filed is empty???
-                                res.render("9edit", {
-                                    layout: "main",
-                                    cohortName,
-                                    createdBy,
-                                    showError: true
+                            hashPass(passwordValueEdit)
+                                .then((hPassword) => {
+                                    updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
+                                        .then(() => {
+                                            showError = false;
+                                            // res.redirect('/thanks');
+                                        })
+                                        .catch((err) => {
+                                            console.log('wierd...', err);
+                                        });
+                                })
+                                .catch((err) => {
+                                    console.log('ERROR!!!.', err);
                                 });
-                            } else { //update users table
-                                hashPass(passwordValueEdit)
-                                    .then((hPassword) => {
-                                        updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
-                                            .then(() => {
-                                                showError = false;
-                                                res.redirect('/thanks');
-                                            })
-                                            .catch((err) => {
-                                                console.log('wierd...', err);
-                                            });
-                                    });
-                            }
-                        }        
-                    });
-            }else{ //one or mmore values do not match //update everything! //user_id from user_profiles 46 && id from users === 46!
-                let name = currentValueOfData.firstNameValues;
-                let second = currentValueOfData.secondNameValues;
-                let email = currentValueOfData.emailValue;
-                let age = currentValueOfData.ageValue;
-                let city = currentValueOfData.cityValue;
-                let home = currentValueOfData.homepageValue;
-                if (name, second, email){
-                    updateJoinUsersAndUserProfilesDBsForEdit(name, second, email, age, city, home, userIDEdit)// but password
+                        }
+                    }
+                    res.redirect('/thanks');        
+                });
+            let nameE = currentValueOfData.firstNameValues;
+            let secondE = currentValueOfData.secondNameValues;
+            let emailE = currentValueOfData.emailValue;
+            let ageE = currentValueOfData.ageValue;
+            let cityE = currentValueOfData.cityValue;
+            let homeE = currentValueOfData.homepageValue;
+            if (nameE === theUserToEdit.first && 
+                secondE === theUserToEdit.last &&
+                emailE === theUserToEdit.email){ //users table
+                console.log('match! Now first, email, last match found! therefore go to Thanks');
+            }else{ //should be a check for wether its empty...
+                console.log('not a match for either: first, last or email..', nameE, '||', secondE);
+                // if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && hashedPassword !== ''){
+                if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){// updateUserProfilesDBForEdit, updateUsersDBForEdit
+                // if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){// updateUserProfilesDBForEdit, updateUsersDBForEdit
+                    console.log('some data was changed, but! all fields have a value');
+                    updateUsersDBForEdit(nameE, secondE, emailE, userIDEdit)
                         .then(() => {
-                            console.log('does not match');
+                            console.log('got updated in users');
                             showError = false;
-                            res.redirect('/thanks');
+                            // res.redirect('/thanks');
                         })
                         .catch((err) => {
-                            console.log('wierd error... whiel updating everything', err);
+                            console.log('error for updating users table... weird', err);
                         });
                 } else {
+                    console.log('some data was changed, but! one of the fields is empty');
                     res.render("9edit", {
                         layout: "main",
                         cohortName,
@@ -471,13 +475,22 @@ app.post('/edit', (req, res) => { //account for mandatory fields and non mandato
                     });
                 }
             }
+            const updateTwo = userIDEdit;
+            updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
+                .then(() => {
+                    console.log('get updated in user_profiles');
+                })
+                .catch((err) => {
+                    console.log('wierd error... while updating profiles', err);
+                });
         })
         .catch((err) => {
             console.log('checking for match did not work ... : ', err);
         });
-}
-);
+});
 //end of edit
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);
 });
+    
+    

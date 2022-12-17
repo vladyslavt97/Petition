@@ -1,7 +1,10 @@
-<a href="/logout" id="signOutBtn">Sign Out</a>
+<a href="/logout" id="signOutBtn"><img src="/signout.png" alt="signout"></a>
 <h3><em>Edit your info:</em></h3><br>
 {{#if showError}}
 <p id="error">FILL THE DATA!</p>
+{{/if}}
+{{#if reenterPwd}}
+<p id="error">To continue and save changes, please your password!</p>
 {{/if}}
 <form action="/edit" method="POST" id="form-user-profile-page">
     <input type="text" name="firstNameValues" placeholder="First Name" value="{{fn}}">
