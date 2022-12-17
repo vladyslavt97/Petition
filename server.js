@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updateJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable, updateUserProfilesDBForEdit, updateUsersDBForEdit } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updateJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable, updateUserProfilesDBForEdit, updateUsersDBForEdit, deleteAllDataFromDB, deleteFromUsersFromDB } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -193,6 +193,33 @@ app.get('/logout', (req, res) => {
     req.session = null;
     res.redirect('/petition');
 });
+//register page from signin
+app.get('/changemind', (req, res) => {
+    req.session = null;
+    res.redirect('/register');
+});
+//register page from signin
+app.get('/deletion', (req, res) => {
+    // req.session = null; 
+    userID = req.session.signedIn;
+    deleteAllDataFromDB(userID)
+        .then(() => {
+            console.log('deleted from the user_profiles');
+            return deleteSignatureFromSignaturesDB(userID);
+        })
+        .then(() => {
+            console.log('deleted from the signatures');
+            return deleteFromUsersFromDB;
+        })
+        .then(() => {
+            console.log('deleted from the users');
+            req.session = null;
+            res.redirect('/petition');
+        })
+        .catch((err) =>{
+            console.log('why wrong?', err);
+        });
+});
 //redraw
 let userID;
 app.get('/redraw', (req, res) => {
@@ -308,14 +335,13 @@ app.post('/signin', (req, res) => {
                     // console.log('log before the compare', matchForUserIDs, '2: ', passwordValueSavedS);
                     compare(passwordValueSavedS, pwdOfUSer)
                         .then((boolean)=>{
-                            console.log(`match: ${boolean}`);
+                            // console.log(`match: ${boolean}`);
                             if(boolean === true){
                                 req.session.signedIn = matchForUserIDs.id;
                                 // console.log('qqqqqqqqq: ', allData);
                                 if(matchForUserIDs.signature){//it exsist - redirect to thanks
                                     req.session.signedWithSignature = matchForUserIDs.id;
                                     res.redirect('/thanks');
-                                    console.log('cooooooookies: ', req.session);
                                 }else{//redirect to signature
                                     res.redirect('/signature');
                                 }
@@ -451,10 +477,8 @@ app.post('/edit', (req, res) => {
                 emailE === theUserToEdit.email){ //users table
                 console.log('match! Now first, email, last match found! therefore go to Thanks');
             }else{ //should be a check for wether its empty...
-                console.log('not a match for either: first, last or email..', nameE, '||', secondE);
-                // if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && hashedPassword !== ''){
-                if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){// updateUserProfilesDBForEdit, updateUsersDBForEdit
-                // if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){// updateUserProfilesDBForEdit, updateUsersDBForEdit
+                console.log('not a match for either: first, last or email..', typeof nameE, '||', secondE);
+                if (nameE !== null && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){
                     console.log('some data was changed, but! all fields have a value');
                     updateUsersDBForEdit(nameE, secondE, emailE, userIDEdit)
                         .then(() => {
@@ -475,14 +499,14 @@ app.post('/edit', (req, res) => {
                     });
                 }
             }
-            const updateTwo = userIDEdit;
-            updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
-                .then(() => {
-                    console.log('get updated in user_profiles');
-                })
-                .catch((err) => {
-                    console.log('wierd error... while updating profiles', err);
-                });
+            // const updateTwo = userIDEdit;
+            // updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
+            //     .then(() => {
+            //         console.log('get updated in user_profiles');
+            //     })
+            //     .catch((err) => {
+            //         console.log('wierd error... while updating profiles', err);
+            //     });
         })
         .catch((err) => {
             console.log('checking for match did not work ... : ', err);

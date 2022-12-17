@@ -94,3 +94,19 @@ module.exports.updatePasswordInUsersTable = (hPassword, userIDEdit) => {
                     SET password = $1
                     WHERE id = $2;`, [hPassword, userIDEdit]);
 };
+
+
+//delete from user_profiles
+module.exports.deleteAllDataFromDB = (userID) => {
+    return db.query(`
+                DELETE FROM user_profiles 
+                WHERE user_id = $1;`, [userID]);
+};
+
+//delete from users
+module.exports.deleteFromUsersFromDB = (userID) => {
+    return db.query(`
+                DELETE FROM users 
+                WHERE id = $1;`, [userID]);
+};
+
