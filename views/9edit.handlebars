@@ -3,16 +3,13 @@
 {{#if showError}}
 <p id="error">FILL THE DATA!</p>
 {{/if}}
-{{!-- fn, ln, em, ag, hp, ct, pw --}}
 <form action="/edit" method="POST" id="form-user-profile-page">
-    {{!-- {{#everything}} --}}
-    <input type="text" name="firstNameValues" placeholder="First Name" value="{{everything.first}}">
-    <input type="text" name="secondNameValues" placeholder="Second Name">
-    <input type="text" name="emailValue" placeholder="Email">
-    <input type="password" name="passwordValue" placeholder="Password" id="password">
-    <input type="text" name="ageValue" placeholder="Age">
-    <input type="text" name="cityValue" placeholder="City">
-    <input type="text" name="homepageValue" placeholder="Your website">
+    <input type="text" name="firstNameValues" placeholder="First Name" value="{{fn}}">
+    <input type="text" name="secondNameValues" placeholder="Second Name" value="{{ln}}">
+    <input type="text" name="emailValue" placeholder="Email" value="{{em}}">
+    <input type="password" name="passwordValue" placeholder="Password" id="password" value="">
+    <input type="text" name="ageValue" placeholder="Age" value="{{ag}}">
+    <input type="text" name="cityValue" placeholder="City" value="{{ct}}">
+    <input type="text" name="homepageValue" placeholder="Your website" value="{{hp}}">
     <button type="submit" href="/thanks"><b> Submit</b></button>
-    {{!-- {{/everything}} --}}
 </form>

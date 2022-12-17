@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit } = require('./db');
+const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updateJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -68,7 +68,6 @@ app.use((req, res, next) => {
 });
 // signedWithSignature or not
 app.use((req, res, next) => {
-    console.log('req.session: ', req.session);
     if (req.url.startsWith("/signature") && req.session.signedWithSignature) {
         res.redirect("/thanks");
     } else {
@@ -210,32 +209,31 @@ app.get('/redraw', (req, res) => {
 });
 //edit
 let userIDEdit;
+let theUserToEdit;
 app.get("/edit", (req, res) => { //we need: first, last, pw, email, age, city, homepage
     userIDEdit = req.session.signedIn;
-    // console.log('userID: ', userIDEdit);//user_profiles = user_id; //users = id
     selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
         .then((data) => {
-            console.log('data.rows: ', data);
             let everything = data.rows;
-            infoOfUser = everything.find(el => {
+            theUserToEdit = everything.find(el => {
                 return el.user_id === req.session.signedIn;
             });
-            console.log('infoOfUser', infoOfUser);
-            // let fn = everything.first;
-            // let ln = everything.last;
-            // let em = everything.email;
-            // let ag = everything.age;
-            // let hp = everything.homepage;
-            // let ct = everything.city;
+            // console.log('first: ', theUserToEdit.first);
+            let fn = theUserToEdit.first;
+            let ln = theUserToEdit.last;
+            let em = theUserToEdit.email;
+            let ag = theUserToEdit.age;
+            let hp = theUserToEdit.homepage;
+            let ct = theUserToEdit.city;
             res.render("9edit", {
                 layout: "main",
                 cohortName,
                 createdBy,
-                // everything: {first: 'Vlad', last, email, age, homepage, city}
+                fn, ln, em, ag, hp, ct
             });
         })
-        .then(err => {
-            console.log('errorr!!!!!RRR!!!:', err);
+        .catch(err => {
+            console.log('<error>:', err);
         });
 });
 //get routes are above
@@ -243,7 +241,7 @@ app.get("/edit", (req, res) => { //we need: first, last, pw, email, age, city, h
 
 
 
-//                                          POST
+//                                                              POST
 //registration post
 app.post('/register', (req, res) => {
     let firstNameValuesSaved = req.body.firstNameValues;
@@ -307,32 +305,28 @@ app.post('/signin', (req, res) => {
                 if (matchForUserIDs){
                     let pwdOfUSer = matchForUserIDs.password;
                     // console.log('log before the compare', matchForUserIDs, '2: ', passwordValueSavedS);
-                    compare(passwordValueSavedS, pwdOfUSer).then((boolean)=>{
-                        console.log(`match: ${boolean}`);
-                        if(boolean === true){
-                            req.session.signedIn = matchForUserIDs.id;
-                            console.log('qqqqqqqqq: ', allData);
-                            // matchForUserSignature = allData.rows.find(el => {
-                            //     console.log('element: ', el);
-                            //     return el.signature === matchForUserIDs;
-                            // });
-                            // console.log('matchForUserSignature: ', matchForUserSignature);
-                            if(matchForUserIDs.signature){//it exsist - redirect to thanks
-                                req.session.signedWithSignature = matchForUserIDs.id;
-                                res.redirect('/thanks');
-                                console.log('cooooooookies: ', req.session);
-                            }else{//redirect to signature
-                                res.redirect('/signature');
+                    compare(passwordValueSavedS, pwdOfUSer)
+                        .then((boolean)=>{
+                            console.log(`match: ${boolean}`);
+                            if(boolean === true){
+                                req.session.signedIn = matchForUserIDs.id;
+                                console.log('qqqqqqqqq: ', allData);
+                                if(matchForUserIDs.signature){//it exsist - redirect to thanks
+                                    req.session.signedWithSignature = matchForUserIDs.id;
+                                    res.redirect('/thanks');
+                                    console.log('cooooooookies: ', req.session);
+                                }else{//redirect to signature
+                                    res.redirect('/signature');
+                                }
+                            }else{
+                                res.render("3signin", {
+                                    layout: "main",
+                                    cohortName,
+                                    createdBy,
+                                    incorrectData: true
+                                });
                             }
-                        }else{
-                            res.render("3signin", {
-                                layout: "main",
-                                cohortName,
-                                createdBy,
-                                incorrectData: true
-                            });
-                        }
-                    });
+                        });
                 }else {
                     console.log('why is it wrong');
                     res.render("3signin", {
@@ -371,10 +365,8 @@ app.post('/user-profile', (req, res) => { //nop need for a cookie, because it ha
         });
 });
 //signature post
-app.post('/signature', (req, res) => { ///should have an update in DB because the signature already exists!!
-    //how to check if an insert or update query should run!
+app.post('/signature', (req, res) => {
     let drawingCanvas = req.body.signature;
-    console.log('req.session: ', req.session);
     let userID = req.session.signedIn;
     if(drawingCanvas){
         insertDataIntoSignatureDB(drawingCanvas, userID)
@@ -399,32 +391,92 @@ app.post('/signature', (req, res) => { ///should have an update in DB because th
 });
 //signature above
 //edit
-app.post('/edit', (req, res) => {
-    //how to check if an insert or update query should run!
-    let drawingCanvas = req.body.signature;
-    console.log('req.session: ', req.session);
-    let userID = req.session.signedIn;
-    if(drawingCanvas){
-        insertDataIntoSignatureDB(drawingCanvas, userID)
-            .then((data)=>{
-                // console.log('got here', data);
-                showError = false,
-                req.session.signedWithSignature = data.rows[0].id;
-                res.redirect('/thanks');
-            })//user ID not the signedIn property
-            .catch((err) => {
-                console.log(err);
+app.post('/edit', (req, res) => { //account for mandatory fields and non mandatory (age, city, homepage) (impossible to have to signature at this point)
+    //for given user (session.signedIn) - running a check for a match of theUserToEdit from selectJoinUsersAndUserProfilesDBsForEdit with the current values
+    const currentValueOfData = req.body;
+    userIDEdit = req.session.signedIn;
+    selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
+        .then((data) => {
+            let everything = data.rows;
+            theUserToEdit = everything.find(el => {
+                return el.user_id === req.session.signedIn;
             });
-    } else {
-        res.render("5signature", {
-            layout: "main",
-            cohortName,
-            createdBy,
-            showError: true
+            console.log('current value of input: ', currentValueOfData.firstNameValues);
+            console.log('current value of user found by 46 (user_id): ', theUserToEdit.first);
+            if (currentValueOfData.firstNameValues === theUserToEdit.first && 
+                currentValueOfData.secondNameValues === theUserToEdit.last &&
+                currentValueOfData.emailValue === theUserToEdit.email &&
+                // currentValueOfData.passwordValue === theUserToEdit.password && //check with compare*
+                currentValueOfData.ageValue === theUserToEdit.age &&
+                currentValueOfData.cityValue === theUserToEdit.city &&
+                currentValueOfData.homepageValue === theUserToEdit.homepage){
+                console.log('match! Now password check!');
+                //pwd check with compare
+                const passwordValueEdit = currentValueOfData.passwordValue;
+                const findPwd = theUserToEdit.password;
+                //pwd value from handlebar //redult of find.password
+                compare(passwordValueEdit, findPwd)
+                    .then((boolean)=>{
+                        console.log(`match: ${boolean}`);
+                        if(boolean === true){//match for password
+                            console.log('Now passwords match also!');
+                            res.redirect('/thanks');
+                        } else {
+                            console.log('boolean is not true?: ', boolean);
+                            if (currentValueOfData.passwordValue === ''){ //what if password filed is empty???
+                                res.render("9edit", {
+                                    layout: "main",
+                                    cohortName,
+                                    createdBy,
+                                    showError: true
+                                });
+                            } else { //update users table
+                                hashPass(passwordValueEdit)
+                                    .then((hPassword) => {
+                                        updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
+                                            .then(() => {
+                                                showError = false;
+                                                res.redirect('/thanks');
+                                            })
+                                            .catch((err) => {
+                                                console.log('wierd...', err);
+                                            });
+                                    });
+                            }
+                        }        
+                    });
+            }else{ //one or mmore values do not match //update everything! //user_id from user_profiles 46 && id from users === 46!
+                let name = currentValueOfData.firstNameValues;
+                let second = currentValueOfData.secondNameValues;
+                let email = currentValueOfData.emailValue;
+                let age = currentValueOfData.ageValue;
+                let city = currentValueOfData.cityValue;
+                let home = currentValueOfData.homepageValue;
+                if (name, second, email){
+                    updateJoinUsersAndUserProfilesDBsForEdit(name, second, email, age, city, home, userIDEdit)// but password
+                        .then(() => {
+                            console.log('does not match');
+                            showError = false;
+                            res.redirect('/thanks');
+                        })
+                        .catch((err) => {
+                            console.log('wierd error... whiel updating everything', err);
+                        });
+                } else {
+                    res.render("9edit", {
+                        layout: "main",
+                        cohortName,
+                        createdBy,
+                        showError: true
+                    });
+                }
+            }
+        })
+        .catch((err) => {
+            console.log('checking for match did not work ... : ', err);
         });
-    }
-
-});
+}
+);
 //end of edit
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);

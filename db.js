@@ -65,3 +65,18 @@ module.exports.selectJoinUsersAndUserProfilesDBsForEdit = (userIDEdit) => { //us
                     FULL OUTER JOIN user_profiles 
                     ON users.id = user_profiles.user_id WHERE user_id = $1;`, [userIDEdit]);//pwd user id , signature email
 };//edit
+
+//edit POST update //we need: first, last, email, age, city, homepage // in case someother data but password is incorrect
+module.exports.updateJoinUsersAndUserProfilesDBsForEdit = (name, second, email, age, city, home, userIDEdit) => { //user_profiles = user_id; //users = id
+    return db.query(`UPDATE users, user_profiles
+                    SET first = $1, last = $2, email = $3, age = $4, city = $5, homepage = $6
+                    WHERE user_id = $7;`, [name, second, email, age, city, home, userIDEdit]);//pwd user id , signature email
+};//edit
+
+
+//edit just the users (becuase of the password)
+module.exports.updatePasswordInUsersTable = (hPassword, userIDEdit) => {
+    return db.query(`UPDATE users 
+                    SET password = $1
+                    WHERE id = $2;`, [hPassword, userIDEdit]);
+};
