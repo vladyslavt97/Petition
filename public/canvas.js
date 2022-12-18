@@ -14,6 +14,11 @@ canvas.addEventListener("mousedown", function (e) {
     lastX = e.offsetX;
     lastY = e.offsetY;
 });
+canvas.addEventListener("touchstart", function(e) {
+    isDrawing = true;
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+});
 
 canvas.addEventListener("mousemove", function (e) {
     if (!isDrawing) return;
@@ -24,16 +29,42 @@ canvas.addEventListener("mousemove", function (e) {
     lastX = e.offsetX;
     lastY = e.offsetY;
 });
+canvas.addEventListener("touchmove", function (e) {
+    if (!isDrawing) return;
+    context.beginPath();
+    context.moveTo(lastX, lastY);
+    context.lineTo(e.offsetX, e.offsetY);
+    context.stroke();
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+});
+
+
+
 canvas.addEventListener("mouseup", function () {
     isDrawing = false;
     let dataURL = canvas.toDataURL();
     const hiddenValue = document.getElementById("hidden").value = dataURL;
     console.log(hiddenValue);
-// });
 });
+canvas.addEventListener("touchend", function () {
+    isDrawing = false;
+    let dataURL = canvas.toDataURL();
+    const hiddenValue = document.getElementById("hidden").value = dataURL;
+    console.log(hiddenValue);
+});
+
+
 canvas.addEventListener("mouseleave", function () {
     isDrawing = false;
 });
+
+
+
+
+
+
+
 
 
 //my setup for encoding

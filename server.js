@@ -485,7 +485,7 @@ app.post('/edit', (req, res) => {
             const updateTwo = userIDEdit;
             updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
                 .then(() => {
-                    console.log('get updated in user_profiles');
+                    console.log('got updated in user_profiles');
                     res.redirect('/thanks');
                 })
                 .catch((err) => {
