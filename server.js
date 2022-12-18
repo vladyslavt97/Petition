@@ -214,12 +214,11 @@ app.get('/deletion', (req, res) => {
         .then(() => {
             console.log('deleted from the users');
             req.session = null;
-            
+            res.redirect('/petition');
         })
         .catch((err) =>{
             console.log('why wrong?', err);
         });
-    res.redirect('/petition');
 });
 //redraw
 let userID;
@@ -301,17 +300,6 @@ app.post('/register', (req, res) => {
             });
         }
     });
-    //
-    // save a new user || grab the user input and read it on the server
-    // hash the password before saving to the Database
-    // save cookies and redirect to Signature Page.
-    //
-    // INSERT in users table (in post /registration)
-    // SELECT to get user info by email address (in post /login)
-    // INSERT for signatures table needs to be changed to include the user_id (in post /petition)
-    // SELECT from signature to find out if they've signedIn (post /login)
-    //
-    
 });
 //registration above
 //signin post
@@ -419,6 +407,7 @@ app.post('/signature', (req, res) => {
 });
 //signature above
 
+
 //edit
 app.post('/edit', (req, res) => {
     const currentValueOfData = req.body;
@@ -430,90 +419,83 @@ app.post('/edit', (req, res) => {
                 return el.user_id === req.session.signedIn;
             });
             const passwordValueEdit = currentValueOfData.passwordValue;
-            const findPwd = theUserToEdit.password;
-            // let reenterPwd = false;
-            // compare(passwordValueEdit, findPwd)
-            //     .then((boolean)=>{
-            //         // console.log(`match: ${boolean}`);
-            //         if(boolean === true){//match for password
-            //             // console.log('Now passwords match also!');
-            //             // res.redirect('/thanks');
-            //         } else {
-            //             // console.log('boolean is not true?: ', boolean);
-            //             if (currentValueOfData.passwordValue === ''){ //what if password filed is empty???
-            //                 res.render("9edit", {
-            //                     layout: "main",
-            //                     cohortName,
-            //                     createdBy,
-            //                     showError: true
-            //                     // reenterPwd: true
-            //                 });
-            //             } else {
-                            hashPass(passwordValueEdit)
-                                .then((hPassword) => {
-                                    updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
-                                        .then(() => {
-                                            showError = false;
-                                            // res.redirect('/thanks');
-                                        })
-                                        .catch((err) => {
-                                            console.log('wierd...', err);
-                                        });
-                                })
-                                .catch((err) => {
-                                    console.log('ERROR!!!.', err);
-                                });
-                        }
-                    }
-                    res.redirect('/thanks');        
+            let fn = theUserToEdit.first;
+            let ln = theUserToEdit.last;
+            let em = theUserToEdit.email;
+            let ag = theUserToEdit.age;
+            let hp = theUserToEdit.homepage;
+            let ct = theUserToEdit.city;
+            // const findPwd = theUserToEdit.password;
+            if (passwordValueEdit !== ''){ //what if password filed is empty???
+                console.log('just a log');
+                hashPass(passwordValueEdit)
+                    .then((hPassword) => {
+                        updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
+                            .then(() => {
+                                showError = false;
+                                // res.redirect('/thanks');
+                            })
+                            .catch((err) => {
+                                console.log('wierd...', err);
+                            });
+                    })
+                    .catch((err) => {
+                        console.log('ERROR!!!.', err);
+                    });
+            } else {
+                res.render("9edit", {
+                    layout: "main",
+                    cohortName,
+                    createdBy,
+                    showError: true,
+                    fn, ln, em, ag, hp, ct
                 });
+            }      
+
+            //users table chagnes
             let nameE = currentValueOfData.firstNameValues;
             let secondE = currentValueOfData.secondNameValues;
             let emailE = currentValueOfData.emailValue;
+            console.log('something has changed in the users table.. ', typeof nameE, '||', secondE);
+            if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){
+                console.log('And there is NO empty field in the users input? then update!');
+                updateUsersDBForEdit(nameE, secondE, emailE, userIDEdit)
+                    .then(() => {
+                        console.log('got updated in users');
+                        showError = false;
+                        // res.redirect('/thanks');
+                    })
+                    .catch((err) => {
+                        console.log('error for updating users table... weird', err);
+                    });
+            } else {
+                console.log('some data was changed, but! one of the fields in users input is empty.......');
+                res.render("9edit", {
+                    layout: "main",
+                    cohortName,
+                    createdBy,
+                    showError: true,
+                    fn, ln, em, ag, hp, ct
+                });
+            }
+            //userp_rofiles updates --- works in any case!!!
             let ageE = currentValueOfData.ageValue;
             let cityE = currentValueOfData.cityValue;
             let homeE = currentValueOfData.homepageValue;
-            if (nameE === theUserToEdit.first && 
-                secondE === theUserToEdit.last &&
-                emailE === theUserToEdit.email){ //users table
-                console.log('match! Now first, email, last match found! therefore go to Thanks');
-            }else{ //should be a check for wether its empty...
-                console.log('not a match for either: first, last or email..', typeof nameE, '||', secondE);
-                if (nameE !== null && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){
-                    console.log('some data was changed, but! all fields have a value');
-                    updateUsersDBForEdit(nameE, secondE, emailE, userIDEdit)
-                        .then(() => {
-                            console.log('got updated in users');
-                            showError = false;
-                            // res.redirect('/thanks');
-                        })
-                        .catch((err) => {
-                            console.log('error for updating users table... weird', err);
-                        });
-                } else {
-                    console.log('some data was changed, but! one of the fields is empty');
-                    res.render("9edit", {
-                        layout: "main",
-                        cohortName,
-                        createdBy,
-                        showError: true
-                    });
-                }
-            }
             const updateTwo = userIDEdit;
             updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
                 .then(() => {
                     console.log('get updated in user_profiles');
+                    res.redirect('/thanks');
                 })
                 .catch((err) => {
                     console.log('wierd error... while updating profiles', err);
                 });
         })
         .catch((err) => {
-            console.log('checking for match did not work ... : ', err);
+            console.log('to tables togehter SELECT: ', err);
         });
 });
-//end of edit
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);
 });
