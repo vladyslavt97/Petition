@@ -170,7 +170,7 @@ app.get("/signers", (req, res) => {//first, last (users table);  //age city home
 //
 // :city is a placeholder and will be put in req.params object
 let signerscitiesRows;
-app.get('/signers/:city', (req, res) => {console.log('params', req.params);
+app.get('/signers/:city', (req, res) => {
     const cityFromSignersPage = req.params.city;
     selectSignersFromSpecificCities(cityFromSignersPage)
         .then(allDataBasedOnCity => {
@@ -209,16 +209,17 @@ app.get('/deletion', (req, res) => {
         })
         .then(() => {
             console.log('deleted from the signatures');
-            return deleteFromUsersFromDB;
+            return deleteFromUsersFromDB(userID);
         })
         .then(() => {
             console.log('deleted from the users');
             req.session = null;
-            res.redirect('/petition');
+            
         })
         .catch((err) =>{
             console.log('why wrong?', err);
         });
+    res.redirect('/petition');
 });
 //redraw
 let userID;
@@ -431,23 +432,23 @@ app.post('/edit', (req, res) => {
             const passwordValueEdit = currentValueOfData.passwordValue;
             const findPwd = theUserToEdit.password;
             // let reenterPwd = false;
-            compare(passwordValueEdit, findPwd)
-                .then((boolean)=>{
-                    // console.log(`match: ${boolean}`);
-                    if(boolean === true){//match for password
-                        // console.log('Now passwords match also!');
-                        // res.redirect('/thanks');
-                    } else {
-                        // console.log('boolean is not true?: ', boolean);
-                        if (currentValueOfData.passwordValue === ''){ //what if password filed is empty???
-                            res.render("9edit", {
-                                layout: "main",
-                                cohortName,
-                                createdBy,
-                                showError: true
-                                // reenterPwd: true
-                            });
-                        } else {
+            // compare(passwordValueEdit, findPwd)
+            //     .then((boolean)=>{
+            //         // console.log(`match: ${boolean}`);
+            //         if(boolean === true){//match for password
+            //             // console.log('Now passwords match also!');
+            //             // res.redirect('/thanks');
+            //         } else {
+            //             // console.log('boolean is not true?: ', boolean);
+            //             if (currentValueOfData.passwordValue === ''){ //what if password filed is empty???
+            //                 res.render("9edit", {
+            //                     layout: "main",
+            //                     cohortName,
+            //                     createdBy,
+            //                     showError: true
+            //                     // reenterPwd: true
+            //                 });
+            //             } else {
                             hashPass(passwordValueEdit)
                                 .then((hPassword) => {
                                     updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
@@ -499,14 +500,14 @@ app.post('/edit', (req, res) => {
                     });
                 }
             }
-            // const updateTwo = userIDEdit;
-            // updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
-            //     .then(() => {
-            //         console.log('get updated in user_profiles');
-            //     })
-            //     .catch((err) => {
-            //         console.log('wierd error... while updating profiles', err);
-            //     });
+            const updateTwo = userIDEdit;
+            updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
+                .then(() => {
+                    console.log('get updated in user_profiles');
+                })
+                .catch((err) => {
+                    console.log('wierd error... while updating profiles', err);
+                });
         })
         .catch((err) => {
             console.log('checking for match did not work ... : ', err);

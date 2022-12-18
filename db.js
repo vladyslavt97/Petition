@@ -53,12 +53,6 @@ module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => {
     return db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id WHERE city = $1;`, [cityFromSignersPage]);
 };
 
-module.exports.deleteSignatureFromSignaturesDB = (userID) => { 
-    return db.query(`DELETE FROM signatures WHERE user_id = $1;`, [userID]);
-};
-
-
-
 //edit GET  //we need: first, last, pw, email, age, city, homepage
 module.exports.selectJoinUsersAndUserProfilesDBsForEdit = (userIDEdit) => { //user_profiles = user_id; //users = id
     return db.query(`SELECT * FROM users 
@@ -95,6 +89,13 @@ module.exports.updatePasswordInUsersTable = (hPassword, userIDEdit) => {
                     WHERE id = $2;`, [hPassword, userIDEdit]);
 };
 
+/////////////////////////////////////////////
+//delete signatures
+module.exports.deleteSignatureFromSignaturesDB = (userID) => { 
+    return db.query(`
+                    DELETE FROM signatures 
+                    WHERE user_id = $1;`, [userID]);
+};
 
 //delete from user_profiles
 module.exports.deleteAllDataFromDB = (userID) => {
