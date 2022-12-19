@@ -1,7 +1,20 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable, updateUserProfilesDBForEdit, updateUsersDBForEdit, deleteAllDataFromDB, deleteFromUsersFromDB } = require('./db');
+const { insertDataIntoUsersDB, 
+    selectAllDataFromSignaturesDB, 
+    insertDataIntoSignatureDB, 
+    insertDataIntoUserProfilesDB, 
+    selectJoinUsersAndUserProfilesDBs, 
+    selectSignersFromSpecificCities, 
+    selectJoinUsersAndSignaturesDBs, 
+    deleteSignatureFromSignaturesDB, 
+    selectJoinUsersAndUserProfilesDBsForEdit, 
+    updatePasswordInUsersTable, 
+    updateUserProfilesDBForEdit, 
+    updateUsersDBForEdit, 
+    deleteAllDataFromDB, 
+    deleteFromUsersFromDB } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
@@ -41,100 +54,27 @@ app.use(
         maxAge: 1000*60*60*24*14
     })
 );
-
-//                                                              USE
-app.get('/', (req, res) => {
-    res.redirect('/petition');
-});
-app.use((req, res, next) => {
-    if (req.url.startsWith("/petition") && req.session.signedIn) {
-        res.redirect("/thanks");
-    } else if (req.url.startsWith("/register") && req.session.signedIn) {
-        res.redirect("/thanks");
-    } else if (req.url.startsWith("/signin") && req.session.signedIn) {
-        res.redirect("/thanks");
-    } else if (req.url.startsWith("/thanks") && !req.session.signedIn) {
-        res.redirect("/petition"); 
-    } else if (req.url.startsWith("/signers") && !req.session.signedIn) {
-        res.redirect("/petition");
-    } else {
-        next();    }
-});
-
-app.use((req, res, next) => {
-    // console.log('req.session.userProfileID', req.session.userProfileID);
-    if (req.url.startsWith("/user-profile") && req.session.userProfileID) {
-        res.redirect("/thanks");
-    } else {
-        next();    }
-});
-// signedWithSignature or not
-app.use((req, res, next) => {
-    if (req.url.startsWith("/signature") && req.session.signedWithSignature) {
-        res.redirect("/thanks");
-    } else {
-        next();    
-    }
-});
-//
-app.use((req, res, next) => {
-    if (req.url.startsWith("/user-profile") && req.session.signedWithSignature) {
-        res.redirect("/thanks");
-    } else {
-        next();    
-    }
-});
-//
-app.use((req, res, next) => {
-    if (req.url.startsWith("/edit") && !req.session.signedIn) {
-        res.redirect("/petition");
-    } else {
-        next();    
-    }
-});
-//
-//
-app.use((req, res, next) => {
-    if (req.url.startsWith("/user-profile") && !req.session.signedIn) {
-        res.redirect("/petition");
-    } else {
-        next();    
-    }
-});
-//
-//
-app.use((req, res, next) => {
-    if (req.url.startsWith("/signature") && !req.session.signedIn) {
-        res.redirect("/petition");
-    } else {
-        next();    
-    }
-});
-//
-app.use((req, res, next) => {
-    if (req.url.startsWith("/signature") && !req.session.signedIn) {
-        res.redirect("/petition");
-    } else {
-        next();    
-    }
-});
-//                                                       middleware ends here                                            
-
-
-
+const {noSignedInCookie, 
+    withSignedInCookie, 
+    noSignedInWithSignatureCookie, 
+    withSignedInWithSignatureCookie} = require("./middleware");
 
 
 
 
 //                                                              GET
-app.get("/petition", (req, res) => { //two simple buttons
+app.get('/', (req, res) => {
+    res.redirect('/petition');
+});
+
+app.get("/petition", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //two simple buttons
     res.render("1petition", {
         layout: "main",
         cohortName,
         createdBy,
     });
 });
-app.get("/register", (req, res) => { //should have 4 validators
+app.get("/register", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //should have 4 validators
     res.render("2register", {
         layout: "main",
         cohortName,
@@ -143,7 +83,7 @@ app.get("/register", (req, res) => { //should have 4 validators
     });
 });
 
-app.get("/signin", (req, res) => { //2 validators
+app.get("/signin", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //2 validators
     res.render("3signin", {
         layout: "main",
         cohortName,
@@ -151,7 +91,7 @@ app.get("/signin", (req, res) => { //2 validators
         showError:false
     });
 });
-app.get("/user-profile", (req, res) => { //3 validators
+app.get("/user-profile", noSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //3 validators
     res.render("4userprofile", {
         layout: "main",
         cohortName,
@@ -159,7 +99,7 @@ app.get("/user-profile", (req, res) => { //3 validators
         showError:false
     });
 });
-app.get("/signature", (req, res) => { // 1 validation
+app.get("/signature", noSignedInCookie, noSignedInWithSignatureCookie, (req, res) => {
     res.render("5signature", {
         layout: "main",
         cohortName,
@@ -172,7 +112,7 @@ let numberofItems;
 let allDataRows;
 let infoOfUser;
 let final;
-app.get("/thanks", (req, res) => { //works!!!
+app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     selectAllDataFromSignaturesDB()
         .then(allData => {
             numberofItems = allData.rows.length;
@@ -194,8 +134,8 @@ app.get("/thanks", (req, res) => { //works!!!
         });
 });///works!!!
 
-app.get("/signers", (req, res) => {//first, last (users table);  //age city homepage (user_profiles table)
-    selectJoinUsersAndUserProfilesDBs()//we get everything from here: first, last (users table);//age city homepage (user_profiles table)
+app.get("/signers", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
+    selectJoinUsersAndUserProfilesDBs()
         .then(allData => {
             allDataRows = allData.rows;
             res.render("7signers", {
@@ -213,7 +153,7 @@ app.get("/signers", (req, res) => {//first, last (users table);  //age city home
 //
 // :city is a placeholder and will be put in req.params object
 let signerscitiesRows;
-app.get('/signers/:city', (req, res) => {
+app.get('/signers/:city', noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     const cityFromSignersPage = req.params.city;
     selectSignersFromSpecificCities(cityFromSignersPage)
         .then(allDataBasedOnCity => {
@@ -247,15 +187,12 @@ app.get('/deletion', (req, res) => {
     userID = req.session.signedIn;
     deleteAllDataFromDB(userID)
         .then(() => {
-            console.log('deleted from the user_profiles');
             return deleteSignatureFromSignaturesDB(userID);
         })
         .then(() => {
-            console.log('deleted from the signatures');
             return deleteFromUsersFromDB(userID);
         })
         .then(() => {
-            console.log('deleted from the users');
             req.session = null;
             res.redirect('/petition');
         })
@@ -281,7 +218,7 @@ app.get('/redraw', (req, res) => {
 //edit
 let userIDEdit;
 let theUserToEdit;
-app.get("/edit", (req, res) => { //we need: first, last, pw, email, age, city, homepage
+app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => { //we need: first, last, pw, email, age, city, homepage
     userIDEdit = req.session.signedIn;
     selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
         .then((data) => {
@@ -321,9 +258,6 @@ app.post('/register', (req, res) => {
     let passwordValueSavedd = req.body.passwordValue;
     //
     hashPass(passwordValueSavedd).then((hashedPassword) => {
-        // compare(str, hashedPassword).then((boolean)=>{
-        //     console.log(`match: ${boolean}`);
-        // });
         if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && hashedPassword !== ''){
             insertDataIntoUsersDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, hashedPassword)
                 .then((data)=>{
@@ -356,25 +290,19 @@ app.post('/signin', (req, res) => {
     if(emailValueSavedS !== '' && passwordValueSavedS !== ''){
         selectJoinUsersAndSignaturesDBs()
             .then((allData) => {
-                // console.log('allData.rows: ', allData.rows);
                 matchForUserIDs = allData.rows.find(el => {
                     return el.email === emailValueSavedS;
                 });
-                // console.log('matchForUserIDs', matchForUserIDs);
-                // final = matchForUserIDs.email;
                 if (matchForUserIDs){
                     let pwdOfUSer = matchForUserIDs.password;
-                    // console.log('log before the compare', matchForUserIDs, '2: ', passwordValueSavedS);
                     compare(passwordValueSavedS, pwdOfUSer)
                         .then((boolean)=>{
-                            // console.log(`match: ${boolean}`);
                             if(boolean === true){
                                 req.session.signedIn = matchForUserIDs.id;
-                                // console.log('qqqqqqqqq: ', allData);
-                                if(matchForUserIDs.signature){//it exsist - redirect to thanks
+                                if(matchForUserIDs.signature){
                                     req.session.signedWithSignature = matchForUserIDs.id;
                                     res.redirect('/thanks');
-                                }else{//redirect to signature
+                                }else{
                                     res.redirect('/signature');
                                 }
                             }else{
@@ -387,7 +315,6 @@ app.post('/signin', (req, res) => {
                             }
                         });
                 }else {
-                    console.log('why is it wrong');
                     res.render("3signin", {
                         layout: "main",
                         cohortName,
@@ -402,14 +329,13 @@ app.post('/signin', (req, res) => {
             layout: "main",
             cohortName,
             createdBy,
-            showError: true //not all fields are filled
+            showError: true
         });
     }
 });
 //signin above
 //user-profile
-app.post('/user-profile', (req, res) => { //nop need for a cookie, because it has to be eddited
-    // console.log('!',req.body.country);
+app.post('/user-profile', (req, res) => {
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
@@ -417,7 +343,6 @@ app.post('/user-profile', (req, res) => { //nop need for a cookie, because it ha
     let userID = req.session.signedIn;
     insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, userID)
         .then((data)=>{
-            console.log('ID of the user_profile inserted: ', data.rows[0].id);
             req.session.userProfileID = data.rows[0].id;
             res.redirect('/signature');
         })
