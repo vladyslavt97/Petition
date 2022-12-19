@@ -14,7 +14,7 @@ module.exports.withSignedInCookie = (req, res, next) => {
 
 module.exports.noSignedInWithSignatureCookie = (req, res, next) => {
     if (req.session.signedWithSignature) {
-        return res.redirect("/welcome/thanks");
+        return res.redirect("/thanks");
     }
     next();
 };
