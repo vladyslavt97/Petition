@@ -706,3 +706,10 @@ button{
 #text-on-petition-page{
     margin: 20px;
 }
+
+span{
+    color: white;
+}
+select{
+    width: 145px;
+}

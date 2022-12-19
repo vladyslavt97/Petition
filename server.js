@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromSignaturesDB, 
+const { selectAllDataFromUsersDB, selectAllDataFromSignaturesDB, 
     selectJoinUsersAndUserProfilesDBs,
     selectAllDataFromUserProfilesDB, 
     selectSignersFromSpecificCities, 
@@ -15,17 +15,7 @@ const { selectAllDataFromSignaturesDB,
 const { hashPass} = require("./encrypt");
 const PORT = 3000;
 
-//countries experiment
 const countries = require("./countries.json");
-// console.log(countries.length);
-// get the user based on the req.session.signedIn
-// get his country from DB
-
-// console.log(countries);
-// let matchingCountry = countries.find(el => {
-//     return el.name === "Ukraine";//should match with req.session.signedIn country
-// });
-// console.log(matchingCountry);
 
 // Handlebars Setup
 const { engine } = require("express-handlebars");
@@ -81,14 +71,21 @@ let final;
 
 // console.log(matchingCountry);
 app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
+    let flag;
+    let hisName;
     selectAllDataFromUserProfilesDB()
         .then((data) => {
             let matchingCountry = countries.find(el => {
                 return el.code === data.rows[0].country;
             });
-            console.log('mc: ', matchingCountry);
-            let flag = matchingCountry.image;
-            console.log('mc image: ', flag);
+            flag = matchingCountry.emoji;
+            return selectAllDataFromUsersDB();
+        })
+        .then(data => {
+            let matchingRow = data.rows.find(el => {
+                return el.id === req.session.signedIn;
+            });
+            hisName = matchingRow.first;
             return selectAllDataFromSignaturesDB();
         })
         .then(allData => {
@@ -102,6 +99,7 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
                 cohortName,
                 countries,
                 flag,
+                hisName,
                 final,
                 numberofItems,
                 createdBy
