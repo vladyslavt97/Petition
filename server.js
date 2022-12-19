@@ -54,11 +54,13 @@ app.use(
         maxAge: 1000*60*60*24*14
     })
 );
-const {noSignedInCookie, 
-    withSignedInCookie, 
-    noSignedInWithSignatureCookie, 
+const {noSignedInCookie,
     withSignedInWithSignatureCookie} = require("./middleware");
 
+
+
+
+const newuserRoutes = require('./routes/newuser');
 
 
 
@@ -67,46 +69,7 @@ app.get('/', (req, res) => {
     res.redirect('/petition');
 });
 
-app.get("/petition", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //two simple buttons
-    res.render("1petition", {
-        layout: "main",
-        cohortName,
-        createdBy,
-    });
-});
-app.get("/register", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //should have 4 validators
-    res.render("2register", {
-        layout: "main",
-        cohortName,
-        createdBy,
-        showError:false
-    });
-});
-
-app.get("/signin", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //2 validators
-    res.render("3signin", {
-        layout: "main",
-        cohortName,
-        createdBy,
-        showError:false
-    });
-});
-app.get("/user-profile", noSignedInCookie, noSignedInWithSignatureCookie, (req, res) => { //3 validators
-    res.render("4userprofile", {
-        layout: "main",
-        cohortName,
-        createdBy,
-        showError:false
-    });
-});
-app.get("/signature", noSignedInCookie, noSignedInWithSignatureCookie, (req, res) => {
-    res.render("5signature", {
-        layout: "main",
-        cohortName,
-        createdBy,
-        showError:false
-    });
-});
+app.use("/", newuserRoutes);
 
 let numberofItems;
 let allDataRows;
@@ -132,7 +95,7 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
         .catch(err => {
             console.log('error appeared for query to get data from signatures table on the thanks get: ', err);
         });
-});///works!!!
+});
 
 app.get("/signers", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     selectJoinUsersAndUserProfilesDBs()
@@ -150,8 +113,8 @@ app.get("/signers", noSignedInCookie, withSignedInWithSignatureCookie, (req, res
             console.log('error appeared for query: ', err);
         });
 });
-//
-// :city is a placeholder and will be put in req.params object
+
+
 let signerscitiesRows;
 app.get('/signers/:city', noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     const cityFromSignersPage = req.params.city;
@@ -171,19 +134,18 @@ app.get('/signers/:city', noSignedInCookie, withSignedInWithSignatureCookie, (re
             console.log('error appeared for query: ', err);
         });
 });
-//signout
+
 app.get('/logout', (req, res) => {
     req.session = null;
     res.redirect('/petition');
 });
-//register page from signin
+
 app.get('/changemind', (req, res) => {
     req.session = null;
     res.redirect('/register');
 });
-//register page from signin
+
 app.get('/deletion', (req, res) => {
-    // req.session = null; 
     userID = req.session.signedIn;
     deleteAllDataFromDB(userID)
         .then(() => {
@@ -206,9 +168,7 @@ app.get('/redraw', (req, res) => {
     userID = req.session.signedIn;
     deleteSignatureFromSignaturesDB(userID)
         .then(() => {
-            // console.log('deleted /redraw', req.session);
             req.session.signedWithSignature = null;
-            // console.log('deleted cookie /redraw', req.session);
             res.redirect('/signature');
         })
         .catch((err) =>{
@@ -218,7 +178,7 @@ app.get('/redraw', (req, res) => {
 //edit
 let userIDEdit;
 let theUserToEdit;
-app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => { //we need: first, last, pw, email, age, city, homepage
+app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     userIDEdit = req.session.signedIn;
     selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
         .then((data) => {
@@ -226,7 +186,6 @@ app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) =
             theUserToEdit = everything.find(el => {
                 return el.user_id === req.session.signedIn;
             });
-            // console.log('first: ', theUserToEdit.first);
             let fn = theUserToEdit.first;
             let ln = theUserToEdit.last;
             let em = theUserToEdit.email;
@@ -246,136 +205,7 @@ app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) =
 });
 //get routes are above
 
-
-
-
 //                                                              POST
-//registration post
-app.post('/register', (req, res) => {
-    let firstNameValuesSaved = req.body.firstNameValues;
-    let secondNameValuesSaved = req.body.secondNameValues;
-    let emailValueSaved = req.body.emailValue;
-    let passwordValueSavedd = req.body.passwordValue;
-    //
-    hashPass(passwordValueSavedd).then((hashedPassword) => {
-        if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && hashedPassword !== ''){
-            insertDataIntoUsersDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, hashedPassword)
-                .then((data)=>{
-                    showError = false, 
-                    req.session.signedIn = data.rows[0].id;
-                    res.redirect('/user-profile');
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        } else {
-            res.render("2register", {
-                layout: "main",
-                cohortName,
-                createdBy,
-                showError: true
-            });
-        }
-    });
-});
-//registration above
-//signin post
-
-let incorrectData = false;
-let matchForUserIDs;
-let matchForUserSignature;
-app.post('/signin', (req, res) => {
-    let emailValueSavedS = req.body.emailValueS;
-    let passwordValueSavedS = req.body.passwordValueS;
-    if(emailValueSavedS !== '' && passwordValueSavedS !== ''){
-        selectJoinUsersAndSignaturesDBs()
-            .then((allData) => {
-                matchForUserIDs = allData.rows.find(el => {
-                    return el.email === emailValueSavedS;
-                });
-                if (matchForUserIDs){
-                    let pwdOfUSer = matchForUserIDs.password;
-                    compare(passwordValueSavedS, pwdOfUSer)
-                        .then((boolean)=>{
-                            if(boolean === true){
-                                req.session.signedIn = matchForUserIDs.id;
-                                if(matchForUserIDs.signature){
-                                    req.session.signedWithSignature = matchForUserIDs.id;
-                                    res.redirect('/thanks');
-                                }else{
-                                    res.redirect('/signature');
-                                }
-                            }else{
-                                res.render("3signin", {
-                                    layout: "main",
-                                    cohortName,
-                                    createdBy,
-                                    incorrectData: true
-                                });
-                            }
-                        });
-                }else {
-                    res.render("3signin", {
-                        layout: "main",
-                        cohortName,
-                        createdBy,
-                        incorrectData: true
-                    });
-                }
-            });
-    } else {
-        console.log('first time if else');
-        res.render("3signin", {
-            layout: "main",
-            cohortName,
-            createdBy,
-            showError: true
-        });
-    }
-});
-//signin above
-//user-profile
-app.post('/user-profile', (req, res) => {
-    let ageValueSaved = req.body.ageValue;
-    let cityValueSaved = req.body.cityValue;
-    let homepageValueSaved = req.body.homepageValue;
-    // let countryValue = req.body.country;
-    let userID = req.session.signedIn;
-    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, userID)
-        .then((data)=>{
-            req.session.userProfileID = data.rows[0].id;
-            res.redirect('/signature');
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-});
-//signature post
-app.post('/signature', (req, res) => {
-    let drawingCanvas = req.body.signature;
-    let userID = req.session.signedIn;
-    if(drawingCanvas){
-        insertDataIntoSignatureDB(drawingCanvas, userID)
-            .then((data)=>{
-                // console.log('got here', data);
-                showError = false,
-                req.session.signedWithSignature = data.rows[0].id;
-                res.redirect('/thanks');
-            })//user ID not the signedIn property
-            .catch((err) => {
-                console.log(err);
-            });
-    } else {
-        res.render("5signature", {
-            layout: "main",
-            cohortName,
-            createdBy,
-            showError: true
-        });
-    }
-
-});
-//signature above
 
 
 //edit
@@ -388,15 +218,13 @@ app.post('/edit', (req, res) => {
             theUserToEdit = everything.find(el => {
                 return el.user_id === req.session.signedIn;
             });
-            //userp_rofiles updates --- works in any case!!!
+            //
             let ageE = currentValueOfData.ageValue;
             let cityE = currentValueOfData.cityValue;
             let homeE = currentValueOfData.homepageValue;
             const updateTwo = userIDEdit;
             updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
                 .then(() => {
-                    console.log('got updated in user_profiles');
-                    // res.redirect('/thanks');
                 })
                 .catch((err) => {
                     console.log('wierd error... while updating profiles', err);
@@ -408,15 +236,12 @@ app.post('/edit', (req, res) => {
             let ag = theUserToEdit.age;
             let hp = theUserToEdit.homepage;
             let ct = theUserToEdit.city;
-            // const findPwd = theUserToEdit.password;
-            if (passwordValueEdit !== ''){ //what if password filed is empty???
-                console.log('just a log');
+            if (passwordValueEdit !== ''){
                 hashPass(passwordValueEdit)
                     .then((hPassword) => {
-                        updatePasswordInUsersTable(hPassword, userIDEdit) // pwd vlaue has to change after we run comparison
+                        updatePasswordInUsersTable(hPassword, userIDEdit)
                             .then(() => {
                                 showError = false;
-                                // res.redirect('/thanks');
                             })
                             .catch((err) => {
                                 console.log('wierd...', err);
@@ -466,5 +291,3 @@ app.post('/edit', (req, res) => {
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);
 });
-    
-    
