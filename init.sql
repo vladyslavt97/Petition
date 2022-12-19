@@ -23,7 +23,7 @@ CREATE TABLE user_profiles (
     city VARCHAR(255) NOT NULL,
     age VARCHAR(255) NOT NULL,
     homepage VARCHAR(255) NOT NULL,
-    -- country VARCHAR(255) NOT NULL,
+    country VARCHAR(255) NOT NULL,
     user_id INT REFERENCES users,
     created_at TIMESTAMP DEFAULT current_timestamp
 );

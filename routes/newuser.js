@@ -13,7 +13,7 @@ const createdBy = 'Vladyslav Tsurkanenko';
 const {noSignedInCookie, 
     withSignedInCookie, 
     noSignedInWithSignatureCookie} = require("../middleware");
-
+const countries = require("../countries.json");
 //                                                              GET
 router.get("/petition", withSignedInCookie, noSignedInWithSignatureCookie, (req, res) => {
     res.render("1petition", {
@@ -43,6 +43,7 @@ router.get("/user-profile", noSignedInCookie, noSignedInWithSignatureCookie, (re
     res.render("4userprofile", {
         layout: "main",
         cohortName,
+        countries,
         createdBy,
         showError:false
     });
@@ -140,14 +141,15 @@ router.post('/signin', (req, res) => {
     }
 });
 //signin above
+
 //user-profile
 router.post('/user-profile', (req, res) => {
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
-    // let countryValue = req.body.country;
+    let countryValue = req.body.country;
     let userID = req.session.signedIn;
-    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, userID)
+    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, countryValue, userID)
         .then((data)=>{
             req.session.userProfileID = data.rows[0].id;
             res.redirect('/signature');

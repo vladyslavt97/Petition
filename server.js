@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 const helmet = require("helmet");
 const { selectAllDataFromSignaturesDB, 
-    selectJoinUsersAndUserProfilesDBs, 
+    selectJoinUsersAndUserProfilesDBs,
+    selectAllDataFromUserProfilesDB, 
     selectSignersFromSpecificCities, 
     deleteSignatureFromSignaturesDB, 
     selectJoinUsersAndUserProfilesDBsForEdit, 
@@ -15,7 +16,7 @@ const { hashPass} = require("./encrypt");
 const PORT = 3000;
 
 //countries experiment
-// const countries = require("./countries.json");
+const countries = require("./countries.json");
 // console.log(countries.length);
 // get the user based on the req.session.signedIn
 // get his country from DB
@@ -71,8 +72,25 @@ let numberofItems;
 let allDataRows;
 let infoOfUser;
 let final;
+// countries experiment
+// console.log(countries.length);
+// get the user based on the req.session.signedIn
+// get his country from DB
+
+// console.log(countries);
+
+// console.log(matchingCountry);
 app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
-    selectAllDataFromSignaturesDB()
+    selectAllDataFromUserProfilesDB()
+        .then((data) => {
+            let matchingCountry = countries.find(el => {
+                return el.code === data.rows[0].country;
+            });
+            console.log('mc: ', matchingCountry);
+            let flag = matchingCountry.image;
+            console.log('mc image: ', flag);
+            return selectAllDataFromSignaturesDB();
+        })
         .then(allData => {
             numberofItems = allData.rows.length;
             infoOfUser = allData.rows.find(el => {
@@ -82,6 +100,8 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
             res.render("6thanks", {
                 layout: "main",
                 cohortName,
+                countries,
+                flag,
                 final,
                 numberofItems,
                 createdBy

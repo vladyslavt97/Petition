@@ -30,8 +30,8 @@ module.exports.selectAllDataFromUserProfilesDB = () =>{
     });
 };
 
-module.exports.insertDataIntoUserProfilesDB = (ageValueSaved, cityValueSaved, homepageValueSaved, userID) => {
-    return db.query(`INSERT INTO user_profiles (city, age, homepage, user_id) VALUES ($1, $2, $3, $4) RETURNING id;`,[cityValueSaved, ageValueSaved, homepageValueSaved, userID]);
+module.exports.insertDataIntoUserProfilesDB = (ageValueSaved, cityValueSaved, homepageValueSaved, countryValue, userID) => {
+    return db.query(`INSERT INTO user_profiles (city, age, homepage, country, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`,[cityValueSaved, ageValueSaved, homepageValueSaved, countryValue, userID]);
 };
 //join users and user_profiles 
 module.exports.selectJoinUsersAndUserProfilesDBs = () => {
