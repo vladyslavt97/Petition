@@ -1,13 +1,9 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { insertDataIntoUsersDB, 
-    selectAllDataFromSignaturesDB, 
-    insertDataIntoSignatureDB, 
-    insertDataIntoUserProfilesDB, 
+const { selectAllDataFromSignaturesDB, 
     selectJoinUsersAndUserProfilesDBs, 
     selectSignersFromSpecificCities, 
-    selectJoinUsersAndSignaturesDBs, 
     deleteSignatureFromSignaturesDB, 
     selectJoinUsersAndUserProfilesDBsForEdit, 
     updatePasswordInUsersTable, 
@@ -15,7 +11,7 @@ const { insertDataIntoUsersDB,
     updateUsersDBForEdit, 
     deleteAllDataFromDB, 
     deleteFromUsersFromDB } = require('./db');
-const { hashPass, compare} = require("./encrypt");
+const { hashPass} = require("./encrypt");
 const PORT = 3000;
 
 //countries experiment

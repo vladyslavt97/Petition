@@ -1,5 +1,5 @@
 module.exports.noSignedInCookie = (req, res, next) => {
-    if (!req.session.signedIn && req.url !== "/register" && req.url !== "/login" && req.url !== "/profile") {
+    if (!req.session.signedIn && req.url !== "/register" && req.url !== "/signin" && req.url !== "/user-profile") {
         return res.redirect("/petition");
     }
     next();
