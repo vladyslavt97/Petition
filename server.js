@@ -7,9 +7,13 @@ const PORT = 3000;
 
 //countries experiment
 // const countries = require("./countries.json");
+// console.log(countries.length);
+// get the user based on the req.session.signedIn
+// get his country from DB
+
 // console.log(countries);
 // let matchingCountry = countries.find(el => {
-//     return el.name === "Ukraine";
+//     return el.name === "Ukraine";//should match with req.session.signedIn country
 // });
 // console.log(matchingCountry);
 
@@ -68,6 +72,48 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     if (req.url.startsWith("/signature") && req.session.signedWithSignature) {
         res.redirect("/thanks");
+    } else {
+        next();    
+    }
+});
+//
+app.use((req, res, next) => {
+    if (req.url.startsWith("/user-profile") && req.session.signedWithSignature) {
+        res.redirect("/thanks");
+    } else {
+        next();    
+    }
+});
+//
+app.use((req, res, next) => {
+    if (req.url.startsWith("/edit") && !req.session.signedIn) {
+        res.redirect("/petition");
+    } else {
+        next();    
+    }
+});
+//
+//
+app.use((req, res, next) => {
+    if (req.url.startsWith("/user-profile") && !req.session.signedIn) {
+        res.redirect("/petition");
+    } else {
+        next();    
+    }
+});
+//
+//
+app.use((req, res, next) => {
+    if (req.url.startsWith("/signature") && !req.session.signedIn) {
+        res.redirect("/petition");
+    } else {
+        next();    
+    }
+});
+//
+app.use((req, res, next) => {
+    if (req.url.startsWith("/signature") && !req.session.signedIn) {
+        res.redirect("/petition");
     } else {
         next();    
     }
@@ -367,6 +413,7 @@ app.post('/user-profile', (req, res) => { //nop need for a cookie, because it ha
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
+    // let countryValue = req.body.country;
     let userID = req.session.signedIn;
     insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, userID)
         .then((data)=>{
