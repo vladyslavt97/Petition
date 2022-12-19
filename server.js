@@ -1,21 +1,10 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { insertDataIntoUsersDB, 
-    selectAllDataFromSignaturesDB, 
-    insertDataIntoSignatureDB, 
-    insertDataIntoUserProfilesDB, 
-    selectJoinUsersAndUserProfilesDBs, 
-    selectSignersFromSpecificCities, 
-    selectJoinUsersAndSignaturesDBs, 
+const { 
     deleteSignatureFromSignaturesDB, 
-    selectJoinUsersAndUserProfilesDBsForEdit, 
-    updatePasswordInUsersTable, 
-    updateUserProfilesDBForEdit, 
-    updateUsersDBForEdit, 
     deleteAllDataFromDB, 
     deleteFromUsersFromDB } = require('./db');
-const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
 //countries experiment
@@ -37,13 +26,10 @@ app.set("view engine", "handlebars");
 // End of setup
 
 
-let showError = false;
 app.use(express.static("./public"));
 const urlEncodedMiddleware = express.urlencoded({ extended: false });
 app.use(urlEncodedMiddleware);
 app.use(helmet());
-const cohortName = "Mint";
-const createdBy = 'Vladyslav Tsurkanenko';
 
 const cookieSession = require("cookie-session");
 
@@ -54,86 +40,22 @@ app.use(
         maxAge: 1000*60*60*24*14
     })
 );
-const {noSignedInCookie,
-    withSignedInWithSignatureCookie} = require("./middleware");
-
-
 
 
 const newuserRoutes = require('./routes/newuser');
+const welcomeRoutes = require('./routes/welcome');
 
-
+app.use("/", newuserRoutes);
+app.use("/welcome", welcomeRoutes);
 
 //                                                              GET
 app.get('/', (req, res) => {
     res.redirect('/petition');
 });
 
-app.use("/", newuserRoutes);
-
-let numberofItems;
-let allDataRows;
-let infoOfUser;
-let final;
-app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
-    selectAllDataFromSignaturesDB()
-        .then(allData => {
-            numberofItems = allData.rows.length;
-            infoOfUser = allData.rows.find(el => {
-                return el.user_id === req.session.signedIn;
-            });
-            final = infoOfUser.signature;
-            res.render("6thanks", {
-                layout: "main",
-                cohortName,
-                final,
-                numberofItems,
-                createdBy
-            });
-            
-        })
-        .catch(err => {
-            console.log('error appeared for query to get data from signatures table on the thanks get: ', err);
-        });
-});
-
-app.get("/signers", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
-    selectJoinUsersAndUserProfilesDBs()
-        .then(allData => {
-            allDataRows = allData.rows;
-            res.render("7signers", {
-                layout: "main",
-                numberofItems,
-                cohortName,
-                createdBy,
-                allDataRows
-            });
-        })
-        .catch(err => {
-            console.log('error appeared for query: ', err);
-        });
-});
 
 
-let signerscitiesRows;
-app.get('/signers/:city', noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
-    const cityFromSignersPage = req.params.city;
-    selectSignersFromSpecificCities(cityFromSignersPage)
-        .then(allDataBasedOnCity => {
-            signerscitiesRows = allDataBasedOnCity.rows;
-            res.render("8signerscities", {
-                layout: "main",
-                numberofItems,
-                cohortName,
-                createdBy,
-                signerscitiesRows,
-                cityFromSignersPage
-            });
-        })
-        .catch(err => {
-            console.log('error appeared for query: ', err);
-        });
-});
+
 
 app.get('/logout', (req, res) => {
     req.session = null;
@@ -175,119 +97,8 @@ app.get('/redraw', (req, res) => {
             console.log('why wrong?', err);
         });
 });
-//edit
-let userIDEdit;
-let theUserToEdit;
-app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
-    userIDEdit = req.session.signedIn;
-    selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
-        .then((data) => {
-            let everything = data.rows;
-            theUserToEdit = everything.find(el => {
-                return el.user_id === req.session.signedIn;
-            });
-            let fn = theUserToEdit.first;
-            let ln = theUserToEdit.last;
-            let em = theUserToEdit.email;
-            let ag = theUserToEdit.age;
-            let hp = theUserToEdit.homepage;
-            let ct = theUserToEdit.city;
-            res.render("9edit", {
-                layout: "main",
-                cohortName,
-                createdBy,
-                fn, ln, em, ag, hp, ct
-            });
-        })
-        .catch(err => {
-            console.log('<error>:', err);
-        });
-});
-//get routes are above
-
-//                                                              POST
 
 
-//edit
-app.post('/edit', (req, res) => {
-    const currentValueOfData = req.body;
-    userIDEdit = req.session.signedIn;
-    selectJoinUsersAndUserProfilesDBsForEdit(userIDEdit)
-        .then((data) => {
-            let everything = data.rows;
-            theUserToEdit = everything.find(el => {
-                return el.user_id === req.session.signedIn;
-            });
-            //
-            let ageE = currentValueOfData.ageValue;
-            let cityE = currentValueOfData.cityValue;
-            let homeE = currentValueOfData.homepageValue;
-            const updateTwo = userIDEdit;
-            updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
-                .then(() => {
-                })
-                .catch((err) => {
-                    console.log('wierd error... while updating profiles', err);
-                });
-            const passwordValueEdit = currentValueOfData.passwordValue;
-            let fn = theUserToEdit.first;
-            let ln = theUserToEdit.last;
-            let em = theUserToEdit.email;
-            let ag = theUserToEdit.age;
-            let hp = theUserToEdit.homepage;
-            let ct = theUserToEdit.city;
-            if (passwordValueEdit !== ''){
-                hashPass(passwordValueEdit)
-                    .then((hPassword) => {
-                        updatePasswordInUsersTable(hPassword, userIDEdit)
-                            .then(() => {
-                                showError = false;
-                            })
-                            .catch((err) => {
-                                console.log('wierd...', err);
-                            });
-                    })
-                    .catch((err) => {
-                        console.log('ERROR!!!.', err);
-                    });
-            } else {
-                res.render("9edit", {
-                    layout: "main",
-                    cohortName,
-                    createdBy,
-                    showError: true,
-                    fn, ln, em, ag, hp, ct
-                });
-            }      
-
-            //users table chagnes
-            let nameE = currentValueOfData.firstNameValues;
-            let secondE = currentValueOfData.secondNameValues;
-            let emailE = currentValueOfData.emailValue;
-            if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){
-                updateUsersDBForEdit(nameE, secondE, emailE, userIDEdit)
-                    .then(() => {
-                        showError = false;
-                        res.redirect('/thanks');
-                    })
-                    .catch((err) => {
-                        console.log('error for updating users table... weird', err);
-                    });
-            } else {
-                res.render("9edit", {
-                    layout: "main",
-                    cohortName,
-                    createdBy,
-                    showError: true,
-                    fn, ln, em, ag, hp, ct
-                });
-            }
-            
-        })
-        .catch((err) => {
-            console.log('to tables togehter SELECT: ', err);
-        });
-});
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Petition: running server at ${PORT}...`);
 });
