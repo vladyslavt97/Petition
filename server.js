@@ -62,14 +62,6 @@ let numberofItems;
 let allDataRows;
 let infoOfUser;
 let final;
-// countries experiment
-// console.log(countries.length);
-// get the user based on the req.session.signedIn
-// get his country from DB
-
-// console.log(countries);
-
-// console.log(matchingCountry);
 app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     let flag;
     let hisName;
@@ -221,7 +213,8 @@ app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) =
 
 //                                                              POST
 
-
+//router
+//error in empty password ()
 //edit
 app.post('/edit', (req, res) => {
     const currentValueOfData = req.body;
@@ -272,6 +265,7 @@ app.post('/edit', (req, res) => {
                     showError: true,
                     fn, ln, em, ag, hp, ct
                 });
+                return;
             }      
 
             //users table chagnes
