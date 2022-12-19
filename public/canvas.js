@@ -2,7 +2,7 @@ console.log("js is connected");
 
 let canvas = document.getElementById("drawing");
 let context = canvas.getContext("2d");
-context.strokeStyle = "#000000";
+context.strokeStyle = "#0000FF";
 context.lineWidth = 5;
 context.lineJoin = "round";
 context.lineCap = "round";

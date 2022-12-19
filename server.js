@@ -1,10 +1,17 @@
 const express = require("express");
 const app = express();
 const helmet = require("helmet");
-const { selectAllDataFromUsersDB, insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, selectAllDataFromUserProfilesDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updateJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable, updateUserProfilesDBForEdit, updateUsersDBForEdit, deleteAllDataFromDB, deleteFromUsersFromDB } = require('./db');
+const { insertDataIntoUsersDB, selectAllDataFromSignaturesDB, insertDataIntoSignatureDB, insertDataIntoUserProfilesDB, selectJoinUsersAndUserProfilesDBs, selectSignersFromSpecificCities, selectJoinUsersAndSignaturesDBs, deleteSignatureFromSignaturesDB, selectJoinUsersAndUserProfilesDBsForEdit, updatePasswordInUsersTable, updateUserProfilesDBForEdit, updateUsersDBForEdit, deleteAllDataFromDB, deleteFromUsersFromDB } = require('./db');
 const { hashPass, compare} = require("./encrypt");
 const PORT = 3000;
 
+//countries experiment
+// const countries = require("./countries.json");
+// console.log(countries);
+// let matchingCountry = countries.find(el => {
+//     return el.name === "Ukraine";
+// });
+// console.log(matchingCountry);
 
 // Handlebars Setup
 const { engine } = require("express-handlebars");
@@ -22,7 +29,7 @@ const cohortName = "Mint";
 const createdBy = 'Vladyslav Tsurkanenko';
 
 const cookieSession = require("cookie-session");
-const e = require("express");
+
 const {SESSION_SECRET} = process.env;
 app.use(
     cookieSession({
@@ -36,21 +43,12 @@ app.get('/', (req, res) => {
     res.redirect('/petition');
 });
 app.use((req, res, next) => {
-    // console.log('req.session use 1: ', req.session); //just (req.session:  Session { signed: 4 })
     if (req.url.startsWith("/petition") && req.session.signedIn) {
         res.redirect("/thanks");
     } else if (req.url.startsWith("/register") && req.session.signedIn) {
         res.redirect("/thanks");
-    } else if (req.url.startsWith("/signin") && req.session.signedIn) {//signedWithSignature
+    } else if (req.url.startsWith("/signin") && req.session.signedIn) {
         res.redirect("/thanks");
-    // } else if (req.url.startsWith("/user-profile") && req.session.signedIn) {
-    //     res.redirect("/thanks");
-        // } else if (req.url.startsWith("/signature") && req.session.sigsignedInned) {
-        //     res.redirect("/thanks");
-    // } else if (req.url.startsWith("/signature") && !req.session.signedWithSignature) {
-    //     res.redirect("/petition");
-    // } else if (req.url.startsWith("/signature") && !req.session.signedIn) {
-    //     res.redirect("/register");
     } else if (req.url.startsWith("/thanks") && !req.session.signedIn) {
         res.redirect("/petition"); 
     } else if (req.url.startsWith("/signers") && !req.session.signedIn) {
@@ -59,7 +57,6 @@ app.use((req, res, next) => {
         next();    }
 });
 
-//need to save user_id property somewhere === userProfileID (for age, city homepage, if entered)
 app.use((req, res, next) => {
     // console.log('req.session.userProfileID', req.session.userProfileID);
     if (req.url.startsWith("/user-profile") && req.session.userProfileID) {
@@ -366,6 +363,7 @@ app.post('/signin', (req, res) => {
 //signin above
 //user-profile
 app.post('/user-profile', (req, res) => { //nop need for a cookie, because it has to be eddited
+    // console.log('!',req.body.country);
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
@@ -418,6 +416,19 @@ app.post('/edit', (req, res) => {
             theUserToEdit = everything.find(el => {
                 return el.user_id === req.session.signedIn;
             });
+            //userp_rofiles updates --- works in any case!!!
+            let ageE = currentValueOfData.ageValue;
+            let cityE = currentValueOfData.cityValue;
+            let homeE = currentValueOfData.homepageValue;
+            const updateTwo = userIDEdit;
+            updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
+                .then(() => {
+                    console.log('got updated in user_profiles');
+                    // res.redirect('/thanks');
+                })
+                .catch((err) => {
+                    console.log('wierd error... while updating profiles', err);
+                });
             const passwordValueEdit = currentValueOfData.passwordValue;
             let fn = theUserToEdit.first;
             let ln = theUserToEdit.last;
@@ -456,20 +467,16 @@ app.post('/edit', (req, res) => {
             let nameE = currentValueOfData.firstNameValues;
             let secondE = currentValueOfData.secondNameValues;
             let emailE = currentValueOfData.emailValue;
-            console.log('something has changed in the users table.. ', typeof nameE, '||', secondE);
             if (nameE !== '' && secondE !== '' && emailE !== '' && passwordValueEdit !== ''){
-                console.log('And there is NO empty field in the users input? then update!');
                 updateUsersDBForEdit(nameE, secondE, emailE, userIDEdit)
                     .then(() => {
-                        console.log('got updated in users');
                         showError = false;
-                        // res.redirect('/thanks');
+                        res.redirect('/thanks');
                     })
                     .catch((err) => {
                         console.log('error for updating users table... weird', err);
                     });
             } else {
-                console.log('some data was changed, but! one of the fields in users input is empty.......');
                 res.render("9edit", {
                     layout: "main",
                     cohortName,
@@ -478,19 +485,7 @@ app.post('/edit', (req, res) => {
                     fn, ln, em, ag, hp, ct
                 });
             }
-            //userp_rofiles updates --- works in any case!!!
-            let ageE = currentValueOfData.ageValue;
-            let cityE = currentValueOfData.cityValue;
-            let homeE = currentValueOfData.homepageValue;
-            const updateTwo = userIDEdit;
-            updateUserProfilesDBForEdit(ageE, cityE, homeE, updateTwo)
-                .then(() => {
-                    console.log('got updated in user_profiles');
-                    res.redirect('/thanks');
-                })
-                .catch((err) => {
-                    console.log('wierd error... while updating profiles', err);
-                });
+            
         })
         .catch((err) => {
             console.log('to tables togehter SELECT: ', err);
