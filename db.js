@@ -61,15 +61,6 @@ module.exports.selectJoinUsersAndUserProfilesDBsForEdit = (userIDEdit) => { //us
                     ON users.id = user_profiles.user_id WHERE user_id = $1;`, [userIDEdit]);//pwd user id , signature email
 };//edit
 
-// //edit POST update //we need: first, last, email, age, city, homepage // in case someother data but password is incorrect
-// module.exports.updateJoinUsersAndUserProfilesDBsForEdit = (nameE, secondE, emailE, ageE, cityE, homeE, userIDEdit) => { //user_profiles = user_id; //users = id
-//     return db.query(`UPDATE users, user
-//                     SET first = $1, last = $2, email = $3, age = $4, city = $5, homepage = $6
-//                     FROM users
-//                     JOIN user_profiles
-//                     ON users.id = user_profiles.user_id
-//                     WHERE user_id = $7;`, [nameE, secondE, emailE, ageE, cityE, homeE, userIDEdit]);//pwd user id , signature email
-// };//edit
 //edit POST update //we need: first, last, email, age, city, homepage // in case someother data but password is incorrect
 module.exports.updateUsersDBForEdit = (nameE, secondE, emailE, userIDEdit) => { //user_profiles = user_id; //users = id
     return db.query(`UPDATE users
@@ -79,8 +70,8 @@ module.exports.updateUsersDBForEdit = (nameE, secondE, emailE, userIDEdit) => { 
 //edit POST update //we need: first, last, email, age, city, homepage // in case someother data but password is incorrect
 module.exports.updateUserProfilesDBForEdit = (ageE, cityE, homeE, updateTwo) => { //user_profiles = user_id; //users = id
     return db.query(`UPDATE user_profiles
-                    SET age = $1, city = $2, homepage = $3
-                    WHERE user_id = $4;`, [ageE, cityE, homeE, updateTwo]);//pwd user id , signature email
+                    SET age = $1, city = $2, homepage = $3, country = $4, myphoto = $5
+                    WHERE user_id = $6;`, [ageE, cityE, homeE, updateTwo]);//pwd user id , signature email
 };//edit
 
 //edit just the users (becuase of the password)
@@ -90,7 +81,6 @@ module.exports.updatePasswordInUsersTable = (hPassword, userIDEdit) => {
                     WHERE id = $2;`, [hPassword, userIDEdit]);
 };
 
-/////////////////////////////////////////////
 //delete signatures
 module.exports.deleteSignatureFromSignaturesDB = (userID) => { 
     return db.query(`

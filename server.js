@@ -68,7 +68,6 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
     let image;
     selectAllDataFromUserProfilesDB()
         .then((data) => {
-            console.log('myphoto 123: ', data.rows[0]);
             let matchingCountry = countries.find(el => {
                 return el.code === data.rows[0].country;
             });
@@ -77,8 +76,6 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
             let imageEncoded = data.rows.find(el => {
                 return el.user_id === req.session.signedIn;
             });
-            console.log('myphoto: ', imageEncoded);
-            console.log('cookie: ', req.session);
             image = imageEncoded.myphoto;
             
             return selectAllDataFromUsersDB();
@@ -224,8 +221,6 @@ app.get("/edit", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) =
 
 //                                                              POST
 
-//router
-//error in empty password ()
 //edit
 app.post('/edit', (req, res) => {
     const currentValueOfData = req.body;

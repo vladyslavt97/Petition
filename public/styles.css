@@ -123,7 +123,7 @@ form {
     position: absolute;
     color: white;
     left: 20px;
-    top: 10px;
+    top: 100px;
 }
 #signOutBtn img{
     width: 60px;
@@ -706,6 +706,13 @@ button{
 #text-on-petition-page{
     margin: 20px;
 }
+.user-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+}
 
 span{
     color: white;
@@ -719,10 +726,10 @@ select{
 }
 
 #theavatar{
-    position: absolute;
-    left: 10px;
-    top: 70px;
-    width: 100px;
+    object-fit: cover;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 5px solid #000 ;
 }
+
