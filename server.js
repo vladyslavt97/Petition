@@ -65,12 +65,22 @@ let final;
 app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res) => {
     let flag;
     let hisName;
+    let image;
     selectAllDataFromUserProfilesDB()
         .then((data) => {
+            console.log('myphoto 123: ', data.rows[0]);
             let matchingCountry = countries.find(el => {
                 return el.code === data.rows[0].country;
             });
             flag = matchingCountry.emoji;
+            
+            let imageEncoded = data.rows.find(el => {
+                return el.user_id === req.session.signedIn;
+            });
+            console.log('myphoto: ', imageEncoded);
+            console.log('cookie: ', req.session);
+            image = imageEncoded.myphoto;
+            
             return selectAllDataFromUsersDB();
         })
         .then(data => {
@@ -92,6 +102,7 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
                 countries,
                 flag,
                 hisName,
+                image,
                 final,
                 numberofItems,
                 createdBy
@@ -99,7 +110,7 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
             
         })
         .catch(err => {
-            console.log('error appeared for query to get data from signatures table on the thanks get: ', err);
+            console.log('error : ', err);
         });
 });
 

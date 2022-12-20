@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
+const multer  = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
+
 const { hashPass, compare} = require("../encrypt");
 const { insertDataIntoUsersDB, 
     insertDataIntoSignatureDB, 
@@ -142,14 +146,26 @@ router.post('/signin', (req, res) => {
 });
 //signin above
 
+
+const fs = require('fs');
+const path = require('path');
+
+//
+
 //user-profile
-router.post('/user-profile', (req, res) => {
+router.post('/user-profile', upload.single('myphoto'), (req, res) => {
+    // console.log('file: ', req.file.mimetype.split('/')[1]);
+    // console.log('file: ', req.file);
+    // let extention = req.file.mimetype.split('/')[1];
+    let pathValue = req.file.filename;
+    const imageAsBase64 = fs.readFileSync(path.join(__dirname, '..', 'uploads', pathValue), 'base64');
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
     let countryValue = req.body.country;
+    console.log('imageUplodaded: ', imageAsBase64);
     let userID = req.session.signedIn;
-    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, countryValue, userID)
+    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, countryValue, imageAsBase64, userID)
         .then((data)=>{
             req.session.userProfileID = data.rows[0].id;
             res.redirect('/signature');

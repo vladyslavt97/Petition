@@ -24,6 +24,7 @@ CREATE TABLE user_profiles (
     age VARCHAR(255) NOT NULL,
     homepage VARCHAR(255) NOT NULL,
     country VARCHAR(255) NOT NULL,
+    myphoto TEXT NOT NULL,
     user_id INT REFERENCES users,
     created_at TIMESTAMP DEFAULT current_timestamp
 );

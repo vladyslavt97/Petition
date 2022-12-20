@@ -1,12 +1,14 @@
+{{!-- <script defer src="myphoto.js"></script> --}}
 <h3><em>Please, share some additional info with us:</em></h3><br>
 <h4 id="not-mandatory-answers-text"><em>(The answers are not mandatory!😊)</em></h4>
 {{#if showError}}
 <p id="error">FILL THE DATA!</p>
 {{/if}}
-<form action="/user-profile" method="POST" id="form-user-profile-page">
+<form action="/user-profile" method="POST" id="form-user-profile-page" enctype="multipart/form-data">
     <input type="text" name="ageValue" placeholder="Age">
     <input type="text" name="cityValue" placeholder="City">
     <input type="text" name="homepageValue" placeholder="Your website">
+    <input type="file" id="photo" name="myphoto" accept="image/png, image/jpeg" >
     <select id="country" name="country" class="form-control">
         {{#each countries}}
             <option value="{{code}}">{{name}}</option>

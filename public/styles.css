@@ -713,3 +713,16 @@ span{
 select{
     width: 145px;
 }
+
+#photo{
+    width: 145px;
+}
+
+#theavatar{
+    position: absolute;
+    left: 10px;
+    top: 70px;
+    width: 100px;
+    border-radius: 50%;
+    border: 5px solid #000 ;
+}
