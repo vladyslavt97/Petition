@@ -2,7 +2,7 @@
 
 body{
     background-color: rgb(171, 171, 171);
-    font-family: 'Fjalla One', sans-serif;
+    font-family: 'Libre Baskerville', serif;
     overflow: hidden;
 }
 
@@ -123,7 +123,7 @@ form {
     position: absolute;
     color: white;
     left: 20px;
-    top: 100px;
+    top: 10px;
 }
 #signOutBtn img{
     width: 60px;
@@ -704,11 +704,14 @@ button{
 }
 
 #text-on-petition-page{
+    font-size: 16px;
+    color: #ffffff;
     margin: 20px;
+    text-shadow: rgb(0, 234, 255) 1px 0 10px;
 }
 .user-info {
     position: absolute;
-    top: 10px;
+    top: 70px;
     left: 10px;
     display: flex;
     align-items: center;
@@ -727,9 +730,16 @@ select{
 
 #theavatar{
     object-fit: cover;
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    border: 5px solid #000 ;
+    border: 3px solid rgb(208, 249, 255) ;
 }
 
+label{
+    color: rgb(255, 243, 76);
+}
+
+#user-data-userprofile-page{
+    font-size: 25px;
+}
