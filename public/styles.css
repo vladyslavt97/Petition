@@ -743,3 +743,7 @@ label{
 #user-data-userprofile-page{
     font-size: 25px;
 }
+
+.element::after{
+    content: "🇺🇦";
+}
