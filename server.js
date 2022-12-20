@@ -68,19 +68,21 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
     let image;
     selectAllDataFromUserProfilesDB()
         .then((data) => {
+            //countries match
             let matchingCountry = countries.find(el => {
                 return el.code === data.rows[0].country;
             });
             flag = matchingCountry.emoji;
-            
+            console.log('flag: ', flag);
+            //image match
             let imageEncoded = data.rows.find(el => {
                 return el.user_id === req.session.signedIn;
             });
             image = imageEncoded.myphoto;
-            
             return selectAllDataFromUsersDB();
         })
         .then(data => {
+            //name who signed
             let matchingRow = data.rows.find(el => {
                 return el.id === req.session.signedIn;
             });
