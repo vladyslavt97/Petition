@@ -9,7 +9,8 @@ const { hashPass, compare} = require("../encrypt");
 const { insertDataIntoUsersDB, 
     insertDataIntoSignatureDB, 
     insertDataIntoUserProfilesDB, 
-    selectJoinUsersAndSignaturesDBs} = require('../db');
+    selectJoinUsersAndSignaturesDBs,
+    selectAllDataFromUserProfilesDB} = require('../db');
 
 let showError = false;
 const cohortName = "Mint";
@@ -112,7 +113,20 @@ router.post('/signin', (req, res) => {
                                 req.session.signedIn = matchForUserIDs.id;
                                 if(matchForUserIDs.signature){
                                     req.session.signedWithSignature = matchForUserIDs.id;
-                                    res.redirect('/thanks');
+                                    let matchForIDs;
+                                    selectAllDataFromUserProfilesDB()
+                                        .then((data) =>{
+                                            matchForIDs = data.rows.find(el => {
+                                                return el.user_id === req.session.signedIn;
+                                            });
+                                            console.log('match: ', matchForIDs);
+                                            req.session.countryCode = matchForIDs.country;
+                                            res.redirect('/thanks');
+                                        })
+                                        .catch((err) => {
+                                            console.log(err);
+                                        });
+                                    
                                 }else{
                                     res.redirect('/signature');
                                 }
@@ -159,6 +173,7 @@ router.post('/user-profile', upload.single('myphoto'), (req, res) => {
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
     let countryValue = req.body.country;
+    console.log('cv: ', countryValue);
     let userID = req.session.signedIn;
     if (req.file){
         let pathValue = req.file.filename;
@@ -167,6 +182,7 @@ router.post('/user-profile', upload.single('myphoto'), (req, res) => {
             .then((data)=>{
                 uploadTheImage = false;
                 req.session.userProfileID = data.rows[0].id;
+                req.session.countryCode = countryValue;
                 res.redirect('/signature');
             })
             .catch((err) => {

@@ -744,6 +744,7 @@ label{
     font-size: 25px;
 }
 
-.element::after{
-    content: "🇺🇦";
+#flag{
+    width: 30px;
+    margin: 20px
 }

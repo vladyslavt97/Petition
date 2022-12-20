@@ -16,7 +16,6 @@ const { hashPass} = require("./encrypt");
 const PORT = 3000;
 
 const countries = require("./countries.json");
-
 // Handlebars Setup
 const { engine } = require("express-handlebars");
 app.engine("handlebars", engine());
@@ -66,14 +65,18 @@ app.get("/thanks", noSignedInCookie, withSignedInWithSignatureCookie, (req, res)
     let flag;
     let hisName;
     let image;
+    console.log('session: ', req.session);
     selectAllDataFromUserProfilesDB()
         .then((data) => {
             //countries match
+            console.log('dr: ', data.rows[0].country);
             let matchingCountry = countries.find(el => {
-                return el.code === data.rows[0].country;
+                return el.code === req.session.countryCode;
             });
+            console.log('matchingCountry: ', matchingCountry);
             flag = matchingCountry.emoji;
             console.log('flag: ', flag);
+
             //image match
             let imageEncoded = data.rows.find(el => {
                 return el.user_id === req.session.signedIn;
