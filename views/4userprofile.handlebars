@@ -1,8 +1,8 @@
 {{!-- <script defer src="myphoto.js"></script> --}}
 <h3><em>Please, share some additional info with us:</em></h3><br>
 <h4 id="not-mandatory-answers-text"><em>(The answers are not mandatory!😊)</em></h4>
-{{#if showError}}
-<p id="error">FILL THE DATA!</p>
+{{#if uploadTheImage}}
+<p id="error">Upload the image! PLEASE!!!</p>
 {{/if}}
 <form action="/user-profile" method="POST" id="form-user-profile-page" enctype="multipart/form-data">
     <input type="text" name="ageValue" placeholder="Age">

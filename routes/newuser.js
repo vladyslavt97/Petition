@@ -70,7 +70,7 @@ router.post('/register', (req, res) => {
     let passwordValueSavedd = req.body.passwordValue;
     //
     hashPass(passwordValueSavedd).then((hashedPassword) => {
-        if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && hashedPassword !== ''){
+        if(firstNameValuesSaved !== '' && secondNameValuesSaved !== '' && emailValueSaved !== '' && passwordValueSavedd !== ''){
             insertDataIntoUsersDB(firstNameValuesSaved, secondNameValuesSaved, emailValueSaved, hashedPassword)
                 .then((data)=>{
                     showError = false, 
@@ -153,22 +153,34 @@ const path = require('path');
 //
 
 //user-profile
+let uploadTheImage = false;
 router.post('/user-profile', upload.single('myphoto'), (req, res) => {
-    let pathValue = req.file.filename;
-    const imageAsBase64 = fs.readFileSync(path.join(__dirname, '..', 'uploads', pathValue), 'base64');
     let ageValueSaved = req.body.ageValue;
     let cityValueSaved = req.body.cityValue;
     let homepageValueSaved = req.body.homepageValue;
     let countryValue = req.body.country;
     let userID = req.session.signedIn;
-    insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, countryValue, imageAsBase64, userID)
-        .then((data)=>{
-            req.session.userProfileID = data.rows[0].id;
-            res.redirect('/signature');
-        })
-        .catch((err) => {
-            console.log(err);
+    if (req.file){
+        let pathValue = req.file.filename;
+        const imageAsBase64 = fs.readFileSync(path.join(__dirname, '..', 'uploads', pathValue), 'base64');
+        insertDataIntoUserProfilesDB(ageValueSaved, cityValueSaved, homepageValueSaved, countryValue, imageAsBase64, userID)
+            .then((data)=>{
+                uploadTheImage = false;
+                req.session.userProfileID = data.rows[0].id;
+                res.redirect('/signature');
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    } else {
+        res.render("4userprofile", {
+            layout: "main",
+            cohortName,
+            countries,
+            createdBy,
+            uploadTheImage: true
         });
+    }
 });
 //signature post
 router.post('/signature', (req, res) => {
