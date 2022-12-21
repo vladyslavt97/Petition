@@ -70,8 +70,8 @@ module.exports.updateUsersDBForEdit = (nameE, secondE, emailE, userIDEdit) => { 
 //edit POST update //we need: first, last, email, age, city, homepage // in case someother data but password is incorrect
 module.exports.updateUserProfilesDBForEdit = (ageE, cityE, homeE, updateTwo) => { //user_profiles = user_id; //users = id
     return db.query(`UPDATE user_profiles
-                    SET age = $1, city = $2, homepage = $3, country = $4, myphoto = $5
-                    WHERE user_id = $6;`, [ageE, cityE, homeE, updateTwo]);//pwd user id , signature email
+                    SET age = $1, city = $2, homepage = $3
+                    WHERE user_id = $4;`, [ageE, cityE, homeE, updateTwo]);//pwd user id , signature email
 };//edit
 
 //edit just the users (becuase of the password)
