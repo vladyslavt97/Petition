@@ -16,3 +16,4 @@ While authenticating, users can choose the country of their origin and upload th
 Once the petition is sined - one can view the list of signers, and sort them by their cities.
 
           
+<img width="1010" alt="image" src="https://user-images.githubusercontent.com/85371429/216789439-6a0d7080-6e4d-4d7b-a4e4-299d8355bfce.png">
