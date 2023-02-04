@@ -20,4 +20,5 @@ Once the petition is sined - one can view the list of signers, and sort them by 
 
 <hr>
 <b>To launch the project locally: </b>
+
 nodemon server.js 
