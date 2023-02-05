@@ -18,6 +18,25 @@ Once the petition is sined - one can view the list of signers, and sort them by 
           
 <img width="1010" alt="image" src="https://user-images.githubusercontent.com/85371429/216789439-6a0d7080-6e4d-4d7b-a4e4-299d8355bfce.png">
 
+
+"Register" page:
+<img width="1008" alt="image" src="https://user-images.githubusercontent.com/85371429/216807745-fcba5b6e-1fd4-4890-ab81-5eb49932d6b8.png">
+
+"Additional info" page:
+<img width="1009" alt="image" src="https://user-images.githubusercontent.com/85371429/216807759-0a415105-bda7-4e92-96af-dc286bd574bf.png">
+
+
+"Signature" page:
+<img width="1007" alt="image" src="https://user-images.githubusercontent.com/85371429/216807843-bfacfdcc-01ba-4084-b3a3-d2b0d0bc4666.png">
+
+"Thanks" page:
+<img width="1008" alt="image" src="https://user-images.githubusercontent.com/85371429/216807857-b37052fc-af71-4baa-9759-43163fdf4ae3.png">
+
+Menu for making changes to the account:
+<img width="1007" alt="image" src="https://user-images.githubusercontent.com/85371429/216807879-29077755-f8e2-4c57-b09c-00b2f47dd1d6.png">
+
+
+
 <hr>
 <b>To launch the project locally: </b>
 
