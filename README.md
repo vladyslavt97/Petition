@@ -33,7 +33,7 @@ Once the petition is sined - one can view the list of signers, and sort them by 
 <img width="1008" alt="image" src="https://user-images.githubusercontent.com/85371429/216807857-b37052fc-af71-4baa-9759-43163fdf4ae3.png">
 
 Menu for making changes to the account:
-<img width="1007" alt="image" src="https://user-images.githubusercontent.com/85371429/216807879-29077755-f8e2-4c57-b09c-00b2f47dd1d6.png">
+![edit](https://user-images.githubusercontent.com/85371429/216808001-ac7d0b1b-5a1f-4f90-8c9f-4f5086513d2b.gif)
 
 
 
