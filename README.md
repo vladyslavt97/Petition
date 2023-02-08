@@ -20,10 +20,10 @@ Once the petition is sined - one can view the list of signers, and sort them by 
 
 
 "Register" page:
-<img width="1008" alt="image" src="https://user-images.githubusercontent.com/85371429/216807745-fcba5b6e-1fd4-4890-ab81-5eb49932d6b8.png">
+<img width="500px" alt="image" src="https://user-images.githubusercontent.com/85371429/216807745-fcba5b6e-1fd4-4890-ab81-5eb49932d6b8.png">
 
 "Additional info" page:
-<img width="1009" alt="image" src="https://user-images.githubusercontent.com/85371429/216807759-0a415105-bda7-4e92-96af-dc286bd574bf.png">
+<img width="500px" alt="image" src="https://user-images.githubusercontent.com/85371429/216807759-0a415105-bda7-4e92-96af-dc286bd574bf.png">
 
 
 #### "Signature" page, "Thanks" page and menu for making changes to the account:
