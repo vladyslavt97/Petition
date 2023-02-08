@@ -13,6 +13,7 @@ Users can sign the petition and also choose to remove the signature from the lis
 While authenticating, users can choose the country of their origin and upload their profile picture.
 
 <hr>
+
 #### "Login" page:
 <img width="500px" alt="image" src="https://user-images.githubusercontent.com/85371429/216789439-6a0d7080-6e4d-4d7b-a4e4-299d8355bfce.png">
 
