@@ -26,15 +26,8 @@ Once the petition is sined - one can view the list of signers, and sort them by 
 <img width="1009" alt="image" src="https://user-images.githubusercontent.com/85371429/216807759-0a415105-bda7-4e92-96af-dc286bd574bf.png">
 
 
-"Signature" page:
-<img width="1007" alt="image" src="https://user-images.githubusercontent.com/85371429/216807843-bfacfdcc-01ba-4084-b3a3-d2b0d0bc4666.png">
-
-"Thanks" page:
-<img width="1008" alt="image" src="https://user-images.githubusercontent.com/85371429/216807857-b37052fc-af71-4baa-9759-43163fdf4ae3.png">
-
-Menu for making changes to the account:
-![edit](https://user-images.githubusercontent.com/85371429/216808001-ac7d0b1b-5a1f-4f90-8c9f-4f5086513d2b.gif)
-
+#### "Signature" page, "Thanks" page and menu for making changes to the account:
+<img width="500px" alt="image" src="https://user-images.githubusercontent.com/85371429/217622176-7a01397d-0d1d-4a44-b350-59bb18b9eb26.gif">
 
 
 <hr>
