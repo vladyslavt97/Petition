@@ -51,7 +51,8 @@ module.exports.selectJoinUsersAndSignaturesDBs = () => {
 
 //signers from a specific city
 module.exports.selectSignersFromSpecificCities = (cityFromSignersPage) => { 
-    return db.query(`SELECT * FROM users FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id WHERE city = $1;`, [cityFromSignersPage]);
+    return db.query(`SELECT * FROM users 
+    FULL OUTER JOIN user_profiles ON users.id = user_profiles.user_id WHERE city = $1;`, [cityFromSignersPage]);
 };
 
 //edit GET  //we need: first, last, pw, email, age, city, homepage

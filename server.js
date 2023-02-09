@@ -13,7 +13,7 @@ const { selectAllDataFromUsersDB, selectAllDataFromSignaturesDB,
     deleteAllDataFromDB, 
     deleteFromUsersFromDB } = require('./db');
 const { hashPass} = require("./encrypt");
-const PORT = 3000;
+const PORT = 8080;
 
 const countries = require("./countries.json");
 // Handlebars Setup
